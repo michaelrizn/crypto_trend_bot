@@ -161,3 +161,13 @@ def move_old_signals_to_history():
                  AND reported = 1''')
     conn.commit()
     conn.close()
+
+def get_signals_count():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM signals WHERE date_end IS NULL")
+    active_count = c.fetchone()[0]
+    c.execute("SELECT COUNT(*) FROM signals WHERE date_end IS NOT NULL")
+    closed_count = c.fetchone()[0]
+    conn.close()
+    return active_count, closed_count
