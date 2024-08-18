@@ -7,13 +7,13 @@ def format_date(date_string):
 def format_new_signal_message(signal, is_new=False):
     status = "Новый сигнал" if is_new else "Актуальный сигнал"
     trend_emoji = "🟢" if signal.trend.lower() == "long" else "🔴"
-    return f"{status}: {signal.name} {trend_emoji} {signal.trend.upper()} Точность: {signal.accuracy}\n" \
+    return f"✅{status}: {signal.name} {trend_emoji} {signal.trend.upper()} Точность: {signal.accuracy}\n" \
            f"Начало: {format_date(signal.date_start)} Цена: {signal.price_start}\n" \
            f"Актуально на: {format_date(signal.date_last)} Цена: {signal.price_last}"
 
 def format_closed_signal_message(signal):
     trend_emoji = "🟢" if signal.trend.lower() == "long" else "🔴"
-    return f"❌ Сигнал закрыт: {signal.name} {trend_emoji} {signal.trend.upper()}\n" \
+    return f"❌Сигнал закрыт: {signal.name} {trend_emoji} {signal.trend.upper()}\n" \
            f"Начало: {format_date(signal.date_start)} Цена: {signal.price_start}\n" \
            f"Конец: {format_date(signal.date_end)} Цена: {signal.price_end}\n" \
            f"Общая длительность: {calculate_duration(signal.date_start, signal.date_end)}"

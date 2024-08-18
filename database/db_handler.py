@@ -1,5 +1,4 @@
 import sqlite3
-import os
 from config import DB_NAME
 
 def init_db():
@@ -38,31 +37,14 @@ def init_db():
     conn.close()
 
 def delete_all_tables():
-    try:
-        if os.path.exists(DB_NAME):
-            os.remove(DB_NAME)
-            print(f"Файл базы данных {DB_NAME} успешно удален.")
-        else:
-            print(f"Файл базы данных {DB_NAME} не найден.")
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
 
-        conn = sqlite3.connect(DB_NAME)
-        c = conn.cursor()
+    c.execute("DROP TABLE IF EXISTS signals")
+    c.execute("DROP TABLE IF EXISTS history")
 
-        c.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = c.fetchall()
-
-        for table_name in tables:
-            c.execute(f"DROP TABLE IF EXISTS {table_name[0]};")
-            print(f"Таблица {table_name[0]} удалена.")
-
-        conn.commit()
-        print("Все таблицы успешно удалены.")
-    except Exception as e:
-        print(f"Ошибка при удалении таблиц: {str(e)}")
-        raise
-    finally:
-        if 'conn' in locals():
-            conn.close()
+    conn.commit()
+    conn.close()
 
 def insert_signal(name, trend, date_start, price_start, accuracy):
     conn = sqlite3.connect(DB_NAME)
@@ -77,7 +59,7 @@ def insert_signal(name, trend, date_start, price_start, accuracy):
         c.execute('''INSERT INTO signals 
                      (name, trend, date_start, date_last, accuracy, price_start, price_last, count_sends)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                  (name, trend, date_start, date_start, accuracy, price_start, price_start, None))
+                  (name, trend, date_start, date_start, accuracy, price_start, price_start, 0))
 
     conn.commit()
     conn.close()
@@ -122,7 +104,6 @@ def get_closed_signals():
                  price_start, price_last, price_end, count_sends, reported 
                  FROM signals 
                  WHERE date_end IS NOT NULL 
-                 AND count_sends IS NOT NULL 
                  AND reported = 0''')
     signals = c.fetchall()
     conn.close()
@@ -138,12 +119,12 @@ def close_signal(name, date_end, price_end):
     conn.commit()
     conn.close()
 
-def mark_signal_as_reported(name):
+def mark_signal_as_reported(signal_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute('''UPDATE signals
                  SET reported = 1
-                 WHERE name = ? AND date_end IS NOT NULL''', (name,))
+                 WHERE id = ?''', (signal_id,))
     conn.commit()
     conn.close()
 
@@ -153,11 +134,9 @@ def move_old_signals_to_history():
     c.execute('''INSERT INTO history
                  SELECT * FROM signals
                  WHERE date_end IS NOT NULL 
-                 AND count_sends IS NOT NULL 
                  AND reported = 1''')
     c.execute('''DELETE FROM signals
                  WHERE date_end IS NOT NULL 
-                 AND count_sends IS NOT NULL 
                  AND reported = 1''')
     conn.commit()
     conn.close()

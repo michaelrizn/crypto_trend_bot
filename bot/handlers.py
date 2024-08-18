@@ -8,7 +8,7 @@ from database.db_handler import get_active_signals, move_old_signals_to_history,
 from utils.message_formatter import format_new_signal_message, format_closed_signal_message
 from database.models import Signal
 import logging
-import aiohttp
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 
@@ -18,26 +18,25 @@ bot = AsyncTeleBot(BOT_TOKEN)
 check_task = None
 
 async def send_signal_messages(chat_id, signals, format_message_func):
-    async with aiohttp.ClientSession() as session:
-        for signal_tuple in signals:
-            signal = Signal(*signal_tuple)
-            message_text = format_message_func(signal)
-            for attempt in range(3):  # Делаем до 3 попыток отправки сообщения
-                try:
-                    await asyncio.sleep(1)  # Добавляем задержку в 1 секунду перед отправкой каждого сообщения
-                    sent_message = await bot.send_message(chat_id, message_text)
-                    logging.info(f"Сообщение успешно отправлено в чат {chat_id}: {sent_message.message_id}")
-                    increment_count_sends(signal.name)
-                    break  # Если сообщение отправлено успешно, выходим из цикла попыток
-                except Exception as e:
-                    logging.error(f"Ошибка отправки сообщения для сигнала {signal.name} на попытке {attempt + 1}: {e}")
-                    if attempt < 2:
-                        await asyncio.sleep(5)  # Ждем 5 секунд перед повторной попыткой
+    for signal_tuple in signals:
+        signal = Signal(*signal_tuple)
+        message_text = format_message_func(signal)
+        for attempt in range(3):  # Делаем до 3 попыток отправки сообщения
+            try:
+                await asyncio.sleep(1)  # Добавляем задержку в 1 секунду перед отправкой каждого сообщения
+                sent_message = await bot.send_message(chat_id, message_text)
+                logging.info(f"Сообщение успешно отправлено в чат {chat_id}: {sent_message.message_id}")
+                increment_count_sends(signal.name)
+                break  # Если сообщение отправлено успешно, выходим из цикла попыток
+            except Exception as e:
+                logging.error(f"Ошибка отправки сообщения для сигнала {signal.name} на попытке {attempt + 1}: {e}")
+                if attempt < 2:
+                    await asyncio.sleep(5)  # Ждем 5 секунд перед повторной попыткой
 
 async def periodic_check(chat_id):
     while True:
-        await perform_check(chat_id)
         await asyncio.sleep(CHECK_INTERVAL)
+        await perform_check(chat_id)
 
 @bot.message_handler(commands=['start'])
 async def start_bot(message):
@@ -97,7 +96,7 @@ async def show_signals(message):
     if closed_signals:
         await send_signal_messages(message.chat.id, closed_signals, format_closed_signal_message)
         for signal in closed_signals:
-            mark_signal_as_reported(signal[1])
+            mark_signal_as_reported(signal[0])
         logging.info("Обработаны закрытые сигналы.")
 
 @bot.message_handler(commands=['help'])
@@ -149,13 +148,21 @@ async def perform_check(chat_id=None):
         update_active_signals()
 
         if chat_id:
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
+            separator = "-" * 40
+            await bot.send_message(chat_id, f"{current_time}\n{separator}")
+
             active_signals = get_active_signals()
             logging.info(f"Получено {len(active_signals)} активных сигналов.")
             await send_signal_messages(chat_id, active_signals, format_new_signal_message)
 
             closed_signals = get_closed_signals()
-            logging.info(f"Получено {len(closed_signals)} закрытых сигналов.")
-            await send_signal_messages(chat_id, closed_signals, format_closed_signal_message)
+            if closed_signals:
+                logging.info(f"Получено {len(closed_signals)} закрытых сигналов.")
+                await send_signal_messages(chat_id, closed_signals, format_closed_signal_message)
+                for signal in closed_signals:
+                    mark_signal_as_reported(signal[0])
+                logging.info("Обработаны закрытые сигналы.")
 
         move_old_signals_to_history()
         logging.info("Завершено выполнение perform_check().")
