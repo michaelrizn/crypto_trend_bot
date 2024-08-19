@@ -5,7 +5,7 @@ BOT_TOKEN = "7317150884:AAENXygTDLy3KGvLIh5CgxfqRRS69Rd2I1U"
 CHANNEL_ID = "7317150884"
 
 # Список проверяемых пар
-CRYPTO_PAIRS = ["BTC/USDT", "ETH/USDT", "ADA/USDT"]
+CRYPTO_PAIRS = ["BTC/USDT", "ETH/USDT", "ADA/USDT", "TON/USDT"]
 
 # Настройки API биржи
 EXCHANGE_API_KEY = "MWpeIx2bRxJW9igMlA4LDb6i7JovQLM9CYYS5AfbD803JyQhWbPAgi2m9LsBE58k"
@@ -15,7 +15,7 @@ EXCHANGE_SECRET = "nxQoPTFVJeR1U6etHoKXtIFbvV5s3nSDOY5579PKVTeHZQcHJw5VZDtJ60Jsl
 DB_NAME = "price_trend_db.sqlite"
 
 # Настройки планировщика
-CHECK_INTERVAL = 15 * 60  # 15 минут в секундах
+CHECK_INTERVAL = 1 * 60  # 15 минут в секундах
 
 # Часовой пояс
-TIMEZONE = "UTC+4"
+TIMEZONE = "Europe/Moscow"

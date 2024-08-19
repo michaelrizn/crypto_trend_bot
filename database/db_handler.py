@@ -150,3 +150,11 @@ def get_signals_count():
     closed_count = c.fetchone()[0]
     conn.close()
     return active_count, closed_count
+
+def fetch_all_signals():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT * FROM signals")
+    signals = c.fetchall()
+    conn.close()
+    return signals
