@@ -134,15 +134,18 @@ def generate_file_content(file_path):
 # Укажите корневую директорию, папки для сканирования, элементы для исключения и путь для сохранения
 project_root = '/Users/mikhailryazanov/PycharmProjects/crypto_trend_bot'  # Корневая директория
 # проекта
-folders_to_scan = ['bot', 'database', 'services', 'utils']  # Список папок для сканирования
-items_to_exclude = ['extractor_code.py', 'price_trend_db.sqlite', '']  # Список файлов и папок,
+folders_to_scan = ['bot', 'database', 'services', 'utils', 'handlers', '']  # Список папок для
+# сканирования
+items_to_exclude = ['extractor_code.py', 'price_trend_db.sqlite', 'project_tree_output.txt',
+                    'code_extractor.py', ''
+                    ]  # Список файлов и папок,
 # которые нужно исключить
-output_path = '/Users/mikhailryazanov/Documents/123/project_tree_output.txt'  # Путь для сохранения результата
+output_path = '/Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/project_tree_output.txt'  # Путь для сохранения результата
 
 # Генерация информации о проекте и сохранение в файл
 output_content = generate_file_info(project_root, folders_to_scan, items_to_exclude)
 
 # Создание директории, если она не существует
-os.makedirs('/Users/mikhailryazanov/Documents/123', exist_ok=True)
+os.makedirs('/Users/mikhailryazanov/PycharmProjects/crypto_trend_bot', exist_ok=True)
 
 save_to_file(output_content, output_path)  # Сохранение результата в файл
