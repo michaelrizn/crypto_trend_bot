@@ -15,7 +15,17 @@ EXCHANGE_SECRET = "nxQoPTFVJeR1U6etHoKXtIFbvV5s3nSDOY5579PKVTeHZQcHJw5VZDtJ60Jsl
 DB_NAME = "price_trend_db.sqlite"
 
 # Настройки планировщика
-CHECK_INTERVAL = 15 * 60  # 15 минут в секундах
+CHECK_INTERVAL = 1 * 60  # 1 минута в секундах
 
 # Часовой пояс
-TIMEZONE = "Europe/Moscow"
+TIMEZONE = "Europe/Samara"
+
+_SEND_ACTUAL_SIGNALS = True
+
+def toggle_actual_signals():
+    global _SEND_ACTUAL_SIGNALS
+    _SEND_ACTUAL_SIGNALS = not _SEND_ACTUAL_SIGNALS
+    return _SEND_ACTUAL_SIGNALS
+
+def get_actual_signals_status():
+    return _SEND_ACTUAL_SIGNALS
