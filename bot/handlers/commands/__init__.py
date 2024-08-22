@@ -9,6 +9,7 @@ from .help import send_help
 from .logs import send_logs
 from .delete_logs import delete_logs
 from .start import start_bot
+from .check import check_command  # Убедитесь, что эта строка присутствует
 from .menu_handlers import get_main_menu_markup, show_signals_button, count_signals_button, start_bot_button, stop_bot_button, help_button
 from .scheduler_command import start_scheduler_command
 
@@ -18,5 +19,5 @@ __all__ = [
     'change_interval', 'send_help', 'send_logs', 'delete_logs',
     'get_main_menu_markup', 'show_signals_button', 'count_signals_button',
     'start_bot_button', 'stop_bot_button', 'help_button', 'send_pending_signals',
-    'start_scheduler_command'
+    'start_scheduler_command', 'check_command'  # Добавьте сюда check_command
 ]

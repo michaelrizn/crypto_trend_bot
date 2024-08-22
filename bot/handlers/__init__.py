@@ -11,7 +11,7 @@ from .commands import (
     send_help,
     send_logs,
     delete_logs,
-    send_pending_signals
+    send_pending_signals,
 )
 from .commands.menu_handlers import (
     get_main_menu_markup,
@@ -22,6 +22,7 @@ from .commands.menu_handlers import (
     help_button
 )
 
+from .commands.check import check_command
 
 async def setup_bot(bot):
     bot.message_handler(commands=['start'])(

@@ -3,6 +3,8 @@ from pathlib import Path
 from telebot.async_telebot import AsyncTeleBot
 from utils.logger import general_logger
 
+MAX_FILE_SIZE = 50 * 1024 * 1024  # Установите лимит на размер файла в 50 MB (или любой другой лимит)
+
 async def send_logs(message, bot: AsyncTeleBot):
     general_logger.info("Запрос логов через команду /logs")
     log_dir = Path(__file__).parents[4] / 'crypto_trend_bot' / 'logs'
@@ -20,6 +22,12 @@ async def send_logs(message, bot: AsyncTeleBot):
                     logging.info(f"Файл {log_file.name} пустой, пропускаем его отправку.")
                     await bot.send_message(message.chat.id,
                                            f"Файл {log_file.name} пустой и не будет отправлен.")
+                    continue
+
+                if log_file.stat().st_size > MAX_FILE_SIZE:
+                    logging.warning(f"Файл {log_file.name} слишком большой для отправки.")
+                    await bot.send_message(message.chat.id,
+                                           f"Файл {log_file.name} слишком большой и не будет отправлен.")
                     continue
 
                 with open(log_file, 'rb') as file:

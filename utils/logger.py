@@ -1,6 +1,5 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
-import os
 from pathlib import Path
 
 def setup_logging():
@@ -11,15 +10,15 @@ def setup_logging():
         log_dir / 'general.log',
         when="D",
         interval=1,
-        backupCount=1
+        backupCount=7
     )
     general_log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
     analyze_log_handler = TimedRotatingFileHandler(
         log_dir / 'analyze.log',
         when="D",
-        interval=7,
-        backupCount=1
+        interval=1,
+        backupCount=7
     )
     analyze_log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 

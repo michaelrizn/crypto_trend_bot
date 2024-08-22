@@ -17,6 +17,7 @@ async def send_help(message, bot: AsyncTeleBot):
 /actual_send - Включить/выключить отправку актуальных сигналов
 /logs - Показать файлы логов
 /delete_logs - Удалить все файлы логов (используйте с осторожностью!)
+/check - Выполнить внеплановую проверку сигналов
     """
     await bot.reply_to(message, help_text, reply_markup=get_main_menu_markup())
     general_logger.info("Справочная информация отправлена.")

@@ -15,13 +15,17 @@ def add_timestamp_and_separator(message):
 def format_new_signal_message(signal, is_new=False):
     status = "Новый сигнал" if signal.count_sends == 0 else "Актуально"
     trend_emoji = "🟢" if signal.trend.lower() == "long" else "🔴"
+    price_change = ((signal.price_last - signal.price_start) / signal.price_start) * 100
+    price_change_sign = "+" if (signal.trend.lower() == "long" and price_change > 0) or (signal.trend.lower() == "short" and price_change < 0) else "-"
+    price_change_str = f"{price_change_sign}{abs(price_change):.2f}%"
 
     general_logger.info(
         f"Форматирование сигнала: {signal.name}, Count Sends: {signal.count_sends}, Статус: {status}")
 
     return f"✅{status}: {signal.name} {trend_emoji} {signal.trend.upper()} Точность: {signal.accuracy}\n" \
            f"Начало: {format_date(signal.date_start)} Цена: {signal.price_start}\n" \
-           f"Актуально на: {format_date(signal.date_last)} Цена: {signal.price_last}"
+           f"Актуально на: {format_date(signal.date_last)} Цена: {signal.price_last}\n" \
+           f"Изменение цены: {price_change_str}"
 
 
 def format_closed_signal_message(signal):

@@ -8,10 +8,11 @@ async def toggle_actual_send(message, bot):
     await bot.send_message(message.chat.id, response)
     general_logger.info(response)
 
-    if not new_status:
-        additional_info = "Отправка актуальных сигналов отключена. Новые и закрытые сигналы всё равно будут отправляться."
-    else:
-        additional_info = "Отправка актуальных сигналов включена."
+    # Удаляем этот блок, чтобы избежать дублирования сообщения
+    # if not new_status:
+    #     additional_info = "Отправка актуальных сигналов отключена. Новые и закрытые сигналы всё равно будут отправляться."
+    # else:
+    #     additional_info = "Отправка актуальных сигналов включена."
 
-    await bot.send_message(message.chat.id, additional_info)
-    general_logger.info(additional_info)
+    # await bot.send_message(message.chat.id, additional_info)
+    # general_logger.info(additional_info)

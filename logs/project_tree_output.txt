@@ -22,6 +22,7 @@ Project Tree Structure:
 │   │   │   │   ├── __pycache__/
 │   │   │   │   │   ├── __init__.cpython-311.pyc
 │   │   │   │   │   ├── actual_send.cpython-311.pyc
+│   │   │   │   │   ├── check.cpython-311.pyc
 │   │   │   │   │   ├── count_signals.cpython-311.pyc
 │   │   │   │   │   ├── delete_logs.cpython-311.pyc
 │   │   │   │   │   ├── delete_tables.cpython-311.pyc
@@ -35,6 +36,7 @@ Project Tree Structure:
 │   │   │   │   │   ├── stop.cpython-311.pyc
 │   │   │   │   │   └── table_signals.cpython-311.pyc
 │   │   │   │   ├── actual_send.py
+│   │   │   │   ├── check.py
 │   │   │   │   ├── count_signals.py
 │   │   │   │   ├── delete_logs.py
 │   │   │   │   ├── delete_tables.py
@@ -131,6 +133,7 @@ pandas==1.5.3
 mplfinance==0.12.9b7
 sqlalchemy
 flake8
+scipy
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/Dockerfile
 File Name: Dockerfile
@@ -200,7 +203,6 @@ from telebot.async_telebot import AsyncTeleBot
 from bot.handlers import setup_bot
 from database.db_handler import init_db
 from config import BOT_TOKEN
-from bot.scheduler import start_scheduler
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s', handlers=[logging.StreamHandler()])
@@ -217,13 +219,6 @@ async def main():
             # Настройка и запуск бота
             await setup_bot(bot)
             logging.info("Бот настроен и готов к запуску.")
-
-            # Обработчик команды /start для получения chat_id и запуска планировщика
-            @bot.message_handler(commands=['start'])
-            async def start_command(message):
-                chat_id = message.chat.id
-                await bot.send_message(chat_id, "Планировщик запущен с интервалом 60 секунд.")
-                await start_scheduler(60, bot, chat_id)  # Передаем chat_id в start_scheduler
 
             # Запуск бота
             await bot.infinity_polling()
@@ -242,8 +237,13 @@ Code:
 import asyncio
 from .handlers.commands import *
 from bot.handlers.commands.menu_handlers import actual_send_button, get_main_menu_markup
+from bot.handlers.commands.check import check_command
+from bot.scheduler import start_scheduler
+import logging
 
 async def setup_bot(bot):
+    logging.info("Настройка команд для бота")
+
     main_menu_markup = get_main_menu_markup()
 
     bot.message_handler(commands=['start'])(lambda message: asyncio.create_task(start_bot(message, bot)))
@@ -257,6 +257,16 @@ async def setup_bot(bot):
     bot.message_handler(commands=['help'])(lambda message: asyncio.create_task(send_help(message, bot)))
     bot.message_handler(commands=['logs'])(lambda message: asyncio.create_task(send_logs(message, bot)))
     bot.message_handler(commands=['delete_logs'])(lambda message: asyncio.create_task(delete_logs(message, bot)))
+    bot.message_handler(commands=['check'])(lambda message: asyncio.create_task(check_command(message, bot)))  # Добавляем команду /check
+
+    logging.info("Команда /check зарегистрирована")
+
+    # Обработчик команды /start
+    @bot.message_handler(commands=['start'])
+    async def start_command(message):
+        chat_id = message.chat.id
+        await bot.send_message(chat_id, "Планировщик запущен с интервалом 60 секунд.")
+        await start_scheduler(60, bot, chat_id)
 
     bot.message_handler(func=lambda message: message.text == "📊 Показать сигналы")(lambda message: asyncio.create_task(show_signals_button(message, bot)))
     bot.message_handler(func=lambda message: message.text == "🔢 Количество сигналов")(lambda message: asyncio.create_task(count_signals_button(message, bot)))
@@ -419,7 +429,7 @@ from .commands import (
     send_help,
     send_logs,
     delete_logs,
-    send_pending_signals
+    send_pending_signals,
 )
 from .commands.menu_handlers import (
     get_main_menu_markup,
@@ -430,6 +440,7 @@ from .commands.menu_handlers import (
     help_button
 )
 
+from .commands.check import check_command
 
 async def setup_bot(bot):
     bot.message_handler(commands=['start'])(
@@ -638,6 +649,24 @@ async def count_signals(message, bot: AsyncTeleBot):
         f"Количество открытых сигналов: {active_count}, закрытых сигналов: {closed_count}"
     )
 --------------------------------------------------------------------------------
+Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/check.py
+File Name: check.py
+Code:
+from telebot.async_telebot import AsyncTeleBot
+from utils.logger import general_logger
+from bot.scheduler import process_signals_func
+
+async def check_command(message, bot: AsyncTeleBot):
+    general_logger.info("Запущена команда /check")
+    chat_id = message.chat.id
+    await bot.send_message(chat_id, "Начинаю внеплановую проверку сигналов...")
+
+    # Запускаем процесс проверки сигналов
+    await process_signals_func(bot)
+
+    await bot.send_message(chat_id, "Внеплановая проверка сигналов завершена.")
+    general_logger.info("Внеплановая проверка сигналов завершена")
+--------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/interval.py
 File Name: interval.py
 Code:
@@ -737,7 +766,6 @@ Code:
 from config import toggle_actual_signals, get_actual_signals_status
 from utils.logger import general_logger
 
-
 async def toggle_actual_send(message, bot):
     new_status = toggle_actual_signals()
     status = "включена" if new_status else "отключена"
@@ -745,13 +773,14 @@ async def toggle_actual_send(message, bot):
     await bot.send_message(message.chat.id, response)
     general_logger.info(response)
 
-    if not new_status:
-        additional_info = "Отправка актуальных сигналов отключена. Новые и закрытые сигналы всё равно будут отправляться."
-    else:
-        additional_info = "Отправка актуальных сигналов включена."
+    # Удаляем этот блок, чтобы избежать дублирования сообщения
+    # if not new_status:
+    #     additional_info = "Отправка актуальных сигналов отключена. Новые и закрытые сигналы всё равно будут отправляться."
+    # else:
+    #     additional_info = "Отправка актуальных сигналов включена."
 
-    await bot.send_message(message.chat.id, additional_info)
-    general_logger.info(additional_info)
+    # await bot.send_message(message.chat.id, additional_info)
+    # general_logger.info(additional_info)
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/start.py
 File Name: start.py
@@ -850,6 +879,8 @@ from pathlib import Path
 from telebot.async_telebot import AsyncTeleBot
 from utils.logger import general_logger
 
+MAX_FILE_SIZE = 50 * 1024 * 1024  # Установите лимит на размер файла в 50 MB (или любой другой лимит)
+
 async def send_logs(message, bot: AsyncTeleBot):
     general_logger.info("Запрос логов через команду /logs")
     log_dir = Path(__file__).parents[4] / 'crypto_trend_bot' / 'logs'
@@ -867,6 +898,12 @@ async def send_logs(message, bot: AsyncTeleBot):
                     logging.info(f"Файл {log_file.name} пустой, пропускаем его отправку.")
                     await bot.send_message(message.chat.id,
                                            f"Файл {log_file.name} пустой и не будет отправлен.")
+                    continue
+
+                if log_file.stat().st_size > MAX_FILE_SIZE:
+                    logging.warning(f"Файл {log_file.name} слишком большой для отправки.")
+                    await bot.send_message(message.chat.id,
+                                           f"Файл {log_file.name} слишком большой и не будет отправлен.")
                     continue
 
                 with open(log_file, 'rb') as file:
@@ -924,6 +961,7 @@ async def send_help(message, bot: AsyncTeleBot):
 /actual_send - Включить/выключить отправку актуальных сигналов
 /logs - Показать файлы логов
 /delete_logs - Удалить все файлы логов (используйте с осторожностью!)
+/check - Выполнить внеплановую проверку сигналов
     """
     await bot.reply_to(message, help_text, reply_markup=get_main_menu_markup())
     general_logger.info("Справочная информация отправлена.")
@@ -968,38 +1006,36 @@ from bot.handlers.utils import send_signal_messages
 from config import get_actual_signals_status
 
 async def show_signals(message, bot: AsyncTeleBot):
-    general_logger.info("Command /show initiated.")
+    general_logger.info("Команда /show запущена.")
     chat_id = message.chat.id
 
+    # Получение активных сигналов
     active_signals = get_active_signals()
     if not active_signals:
-        general_logger.info("No active signals found.")
-        await bot.reply_to(message, "No active signals currently available.")
+        general_logger.info("Активных сигналов нет.")
+        await bot.reply_to(message, "В данный момент нет активных сигналов.")
     else:
-        general_logger.info(f"Found {len(active_signals)} active signals.")
-        await bot.reply_to(message, f"Number of active signals: {len(active_signals)}")
+        general_logger.info(f"Найдено {len(active_signals)} активных сигналов.")
         await send_signal_messages(
             chat_id=chat_id, signals=active_signals, format_message_func=format_new_signal_message
         )
 
+    # Получение закрытых сигналов
     closed_signals = get_closed_signals()
     if closed_signals:
-        general_logger.info(f"Found {len(closed_signals)} closed signals.")
-        await bot.reply_to(message, f"Number of closed signals: {len(closed_signals)}")
+        general_logger.info(f"Найдено {len(closed_signals)} закрытых сигналов.")
         await send_signal_messages(
-            chat_id=chat_id, signals=closed_signals,
-            format_message_func=format_closed_signal_message
+            chat_id=chat_id, signals=closed_signals, format_message_func=format_closed_signal_message
         )
         for signal in closed_signals:
-            mark_signal_as_reported(signal.id)
-        general_logger.info("Closed signals processed and marked as reported.")
+            mark_signal_as_reported(signal[0])
+        general_logger.info("Закрытые сигналы обработаны и отмечены как отправленные.")
     else:
-        general_logger.info("No closed signals found.")
-        await bot.reply_to(message, "No closed signals currently available.")
-
+        general_logger.info("Закрытых сигналов нет.")
+        await bot.reply_to(message, "В данный момент нет закрытых сигналов.")
 
 async def send_pending_signals(bot: AsyncTeleBot, chat_id):
-    general_logger.info("Processing pending signals.")
+    general_logger.info("Обработка ожидающих сигналов.")
     signals_to_send = get_signals_to_send()
     send_actual = get_actual_signals_status()
 
@@ -1009,19 +1045,27 @@ async def send_pending_signals(bot: AsyncTeleBot, chat_id):
         if signal:
             signals_dict[signal_id] = signal
 
-    general_logger.info(f"Using chat_id: {chat_id}")
+    general_logger.info(f"Используемый chat_id: {chat_id}")
 
     if signals_dict:
         general_logger.info(
-            f"Sending {len(signals_dict)} signals. Actual signals sending is {'enabled' if send_actual else 'disabled'}.")
+            f"Отправка {len(signals_dict)} сигналов. Отправка актуальных сигналов {'включена' if send_actual else 'выключена'}.")
 
-        timestamp_message = add_timestamp_and_separator("")
-        await bot.send_message(chat_id, timestamp_message)
-        general_logger.info("Sent message with timestamp and separator")
+        if send_actual:
+            timestamp_message = add_timestamp_and_separator("")
+            await bot.send_message(chat_id, timestamp_message)
+            general_logger.info("Отправлено сообщение с временной меткой и разделителем.")
 
         for signal in signals_dict.values():
             is_new = signal.count_sends == 0
             is_closed = signal.date_end is not None
+
+            if is_new:
+                general_logger.info(f"Обнаружен новый сигнал с ID {signal.id}.")
+            elif is_closed:
+                general_logger.info(f"Обнаружен закрытый сигнал с ID {signal.id}.")
+            else:
+                general_logger.info(f"Обнаружен актуальный сигнал с ID {signal.id}.")
 
             if is_new or is_closed or send_actual:
                 if is_closed:
@@ -1053,25 +1097,25 @@ async def send_pending_signals(bot: AsyncTeleBot, chat_id):
                 general_logger.info(
                     f"Пропущен актуальный сигнал с ID {signal.id} из-за настроек отправки")
 
-        general_logger.info(f"Sent signals processing completed.")
+        general_logger.info("Обработка отправки сигналов завершена.")
     else:
-        general_logger.info("No new signals to send.")
-        await bot.send_message(chat_id, "No new signals to send.")
+        general_logger.info("Новых сигналов для отправки нет.")
+        await bot.send_message(chat_id, "Новых сигналов для отправки нет.")
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/menu_handlers.py
 File Name: menu_handlers.py
 Code:
 from telebot.async_telebot import AsyncTeleBot
+from .actual_send import toggle_actual_send
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 def get_main_menu_markup():
     main_menu_markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    main_menu_markup.row(KeyboardButton("📊 Показать сигналы"), KeyboardButton("🔢 Количество "
-                                                                              "сигналов"))
+    main_menu_markup.row(KeyboardButton("📊 Показать сигналы"), KeyboardButton("🔢 Количество сигналов"))
     main_menu_markup.row(KeyboardButton("▶️ Старт"), KeyboardButton("⏹ Стоп"))
-    main_menu_markup.row(KeyboardButton("Актуальная отправка"), KeyboardButton("❓ Помощь"))
+    main_menu_markup.row(KeyboardButton("/actual_send"), KeyboardButton("❓ Помощь"))
     main_menu_markup.row(KeyboardButton("/delete_tables"), KeyboardButton("/table_signals"))
-    main_menu_markup.row(KeyboardButton("/interval"), KeyboardButton("/actual_send"))
+    main_menu_markup.row(KeyboardButton("/interval"), KeyboardButton("/check"))
     main_menu_markup.row(KeyboardButton("/logs"), KeyboardButton("/delete_logs"))
     return main_menu_markup
 
@@ -1092,8 +1136,6 @@ async def stop_bot_button(message, bot):
     await stop_bot(message, bot)
 
 async def actual_send_button(message, bot):
-    await bot.send_message(message.chat.id, "Выполняется команда /actual_send")
-    from .actual_send import toggle_actual_send  # Импорт здесь во избежание циклических импортов
     await toggle_actual_send(message, bot)
 
 async def help_button(message, bot):
@@ -1102,6 +1144,7 @@ async def help_button(message, bot):
 --------------------------------------------------------------------------------
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/__pycache__/logs.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/__pycache__/stop.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
+Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/__pycache__/check.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/__pycache__/menu_handlers.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/__pycache__/count_signals.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/__pycache__/delete_logs.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
@@ -1512,14 +1555,19 @@ Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/trend_ana
 File Name: trend_analyzer.py
 Code:
 import numpy as np
+from utils.logger import analyze_logger
 
 def analyze_trend(ohlcv_data):
+    analyze_logger.info("Начало анализа тренда")
     if not ohlcv_data:
+        analyze_logger.warning("Нет данных для анализа")
         return None, 0
 
     closes = np.array([x[4] for x in ohlcv_data])
-    ma_short = np.mean(closes[-12:])  # 12-hour moving average
-    ma_long = np.mean(closes)  # 48-hour moving average
+    ma_short = np.mean(closes[-24:])  # 24-hour moving average
+    ma_long = np.mean(closes)  # Full period moving average
+
+    analyze_logger.info(f"Короткая MA: {ma_short}, Длинная MA: {ma_long}")
 
     if ma_short > ma_long:
         trend = "long"
@@ -1532,7 +1580,13 @@ def analyze_trend(ohlcv_data):
     diff = abs(ma_short - ma_long)
     max_diff = max(closes) - min(closes)
     accuracy = int((1 - diff / max_diff) * 100) if max_diff != 0 else 50
-    accuracy = max(1, min(100, accuracy))  # Убедимся, что accuracy в пределах от 1 до 100
+    accuracy = max(1, min(100, accuracy))
+
+    analyze_logger.info(f"Определен тренд: {trend}, Точность: {accuracy}")
+
+    # Здесь можно добавить вызов TinyML анализа
+    # tinyml_result = analyze_with_tinyml(ohlcv_data)
+    # analyze_logger.info(f"Результат TinyML анализа: {tinyml_result}")
 
     return trend, accuracy
 
@@ -1623,7 +1677,6 @@ File Name: logger.py
 Code:
 import logging
 from logging.handlers import TimedRotatingFileHandler
-import os
 from pathlib import Path
 
 def setup_logging():
@@ -1634,15 +1687,15 @@ def setup_logging():
         log_dir / 'general.log',
         when="D",
         interval=1,
-        backupCount=1
+        backupCount=7
     )
     general_log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
     analyze_log_handler = TimedRotatingFileHandler(
         log_dir / 'analyze.log',
         when="D",
-        interval=7,
-        backupCount=1
+        interval=1,
+        backupCount=7
     )
     analyze_log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 
@@ -1686,13 +1739,17 @@ def add_timestamp_and_separator(message):
 def format_new_signal_message(signal, is_new=False):
     status = "Новый сигнал" if signal.count_sends == 0 else "Актуально"
     trend_emoji = "🟢" if signal.trend.lower() == "long" else "🔴"
+    price_change = ((signal.price_last - signal.price_start) / signal.price_start) * 100
+    price_change_sign = "+" if (signal.trend.lower() == "long" and price_change > 0) or (signal.trend.lower() == "short" and price_change < 0) else "-"
+    price_change_str = f"{price_change_sign}{abs(price_change):.2f}%"
 
     general_logger.info(
         f"Форматирование сигнала: {signal.name}, Count Sends: {signal.count_sends}, Статус: {status}")
 
     return f"✅{status}: {signal.name} {trend_emoji} {signal.trend.upper()} Точность: {signal.accuracy}\n" \
            f"Начало: {format_date(signal.date_start)} Цена: {signal.price_start}\n" \
-           f"Актуально на: {format_date(signal.date_last)} Цена: {signal.price_last}"
+           f"Актуально на: {format_date(signal.date_last)} Цена: {signal.price_last}\n" \
+           f"Изменение цены: {price_change_str}"
 
 
 def format_closed_signal_message(signal):
@@ -1740,93 +1797,71 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
+from scipy.interpolate import make_interp_spline
 import io
-
 
 def find_nearest_index(df, target_time):
     nearest_idx = df.index.get_indexer([target_time], method='nearest')[0]
     return df.index[nearest_idx]
-
 
 def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=None):
     df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
     df.set_index('timestamp', inplace=True)
 
-    # Рассчитываем линию тренда
+    # Расчет плавной линии тренда
     x = np.arange(len(df))
     y = df['close'].values
 
-    # Вывод длины массивов x и y для диагностики
-    print(f"Length of x: {len(x)}, Length of y: {len(y)}")
-
-    z = np.polyfit(x, y, 1)
-    p = np.poly1d(z)
-    trend_line = p(x)
+    if len(x) > 3:  # Проверка, что достаточно точек для сглаживания
+        x_smooth = np.linspace(x.min(), x.max(), len(x))  # Делаем сглаживание с тем же количеством точек
+        spl = make_interp_spline(x, y, k=3)
+        y_smooth = spl(x_smooth)
+    else:
+        x_smooth = x
+        y_smooth = y
 
     # Настройка стиля графика
     mc = mpf.make_marketcolors(up='g', down='r', inherit=True)
     s = mpf.make_mpf_style(marketcolors=mc)
 
     # Подготовка дополнительных графиков
-    apds = [mpf.make_addplot(trend_line, color='blue', width=1)]
+    apds = [mpf.make_addplot(y_smooth, color='blue', width=1)]
 
     if signal_start_date:
         signal_start = datetime.fromisoformat(signal_start_date)
         if signal_start.tzinfo is not None:
             signal_start = signal_start.replace(tzinfo=None)
-
-        # Используем ближайшую временную метку
-        signal_start_index = find_nearest_index(df, signal_start)
-        print(
-            f"Signal start at {signal_start_index}, close value: {df['close'].loc[signal_start_index]}")
-
-        # Создание временного ряда с NaN, кроме одного значения
+        signal_start_index = df.index.get_indexer([signal_start], method='nearest')[0]
         signal_start_series = pd.Series([np.nan] * len(df), index=df.index)
-        signal_start_series.loc[signal_start_index] = df['close'].loc[signal_start_index]
-
-        apds.append(mpf.make_addplot(signal_start_series, type='scatter',
-                                     markersize=100, marker='^',
-                                     color='g' if trend.lower() == 'long' else 'r'))
+        signal_start_series.iloc[signal_start_index] = df['close'].iloc[signal_start_index]
+        apds.append(mpf.make_addplot(signal_start_series, type='scatter', markersize=100, marker='^', color='g' if trend.lower() == 'long' else 'r'))
 
     if signal_end_date:
         signal_end = datetime.fromisoformat(signal_end_date)
         if signal_end.tzinfo is not None:
             signal_end = signal_end.replace(tzinfo=None)
-
-        # Используем ближайшую временную метку
-        signal_end_index = find_nearest_index(df, signal_end)
-        print(f"Signal end at {signal_end_index}, close value: {df['close'].loc[signal_end_index]}")
-
-        # Создание временного ряда с NaN, кроме одного значения
+        signal_end_index = df.index.get_indexer([signal_end], method='nearest')[0]
         signal_end_series = pd.Series([np.nan] * len(df), index=df.index)
-        signal_end_series.loc[signal_end_index] = df['close'].loc[signal_end_index]
-
-        apds.append(mpf.make_addplot(signal_end_series, type='scatter',
-                                     markersize=100, marker='v', color='r'))
+        signal_end_series.iloc[signal_end_index] = df['close'].iloc[signal_end_index]
+        apds.append(mpf.make_addplot(signal_end_series, type='scatter', markersize=100, marker='v', color='r'))
 
     # Создание графика
-    try:
-        fig, axes = mpf.plot(df, type='candle', style=s, addplot=apds,
-                             title=f'Тренд: {trend.capitalize()}',
-                             ylabel='Цена',
-                             datetime_format='%Y-%m-%d %H:%M',
-                             figsize=(12, 8),
-                             returnfig=True)
+    fig, axes = mpf.plot(df, type='candle', style=s, addplot=apds,
+                         title=f'Тренд: {trend.capitalize()}',
+                         ylabel='Цена',
+                         datetime_format='%Y-%m-%d %H:%M',
+                         figsize=(12, 8),
+                         returnfig=True)
 
-        # Настройка легенды
-        axes[0].legend(['Линия тренда', 'Начало сигнала', 'Конец сигнала'])
+    axes[0].legend(['Линия тренда', 'Начало сигнала', 'Конец сигнала'])
 
-        # Сохранение графика в байтовый поток
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
-        buf.seek(0)
-        plt.close(fig)
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+    buf.seek(0)
+    plt.close(fig)
 
-        return buf
-    except Exception as e:
-        print(f"Ошибка при создании графика: {e}")
-        raise
+    return buf
 --------------------------------------------------------------------------------
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/utils/__pycache__/message_formatter.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/utils/__pycache__/logger.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte

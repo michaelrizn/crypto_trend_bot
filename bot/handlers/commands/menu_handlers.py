@@ -1,14 +1,14 @@
 from telebot.async_telebot import AsyncTeleBot
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 from .actual_send import toggle_actual_send
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 def get_main_menu_markup():
     main_menu_markup = ReplyKeyboardMarkup(resize_keyboard=True)
     main_menu_markup.row(KeyboardButton("📊 Показать сигналы"), KeyboardButton("🔢 Количество сигналов"))
     main_menu_markup.row(KeyboardButton("▶️ Старт"), KeyboardButton("⏹ Стоп"))
-    main_menu_markup.row(KeyboardButton("Актуальная отправка"), KeyboardButton("❓ Помощь"))
+    main_menu_markup.row(KeyboardButton("/actual_send"), KeyboardButton("❓ Помощь"))
     main_menu_markup.row(KeyboardButton("/delete_tables"), KeyboardButton("/table_signals"))
-    main_menu_markup.row(KeyboardButton("/interval"), KeyboardButton("/actual_send"))
+    main_menu_markup.row(KeyboardButton("/interval"), KeyboardButton("/check"))
     main_menu_markup.row(KeyboardButton("/logs"), KeyboardButton("/delete_logs"))
     return main_menu_markup
 
