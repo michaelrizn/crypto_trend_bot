@@ -11,3 +11,4 @@ mplfinance==0.12.9b7
 sqlalchemy
 flake8
 scipy
+telebot

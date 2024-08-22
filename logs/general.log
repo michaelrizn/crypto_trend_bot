@@ -427,3 +427,359 @@
 2024-08-22 17:53:17,529 - INFO - Chart for TON/USDT generated successfully.
 2024-08-22 17:53:18,773 - INFO - Message with chart sent successfully to chat 34949444: 3961
 2024-08-22 17:53:18,909 - INFO - Периодическая проверка сигналов запущена.
+2024-08-22 18:00:40,342 - INFO - Запущена команда /check
+2024-08-22 18:01:06,606 - INFO - Запущена команда /check
+2024-08-22 18:03:18,356 - INFO - Запущена команда /check
+2024-08-22 18:05:54,014 - INFO - Запущена команда /count.
+2024-08-22 18:05:54,381 - INFO - Количество открытых сигналов: 4, закрытых сигналов: 0
+2024-08-22 18:05:55,953 - INFO - Команда /show запущена.
+2024-08-22 18:05:55,954 - INFO - Найдено 4 активных сигналов.
+2024-08-22 18:05:55,954 - INFO - Started sending messages for 4 signals.
+2024-08-22 18:05:56,093 - INFO - Sent message with timestamp and separator: 2024-08-22 18:05
+----------------------------------------
+2024-08-22 18:05:56,093 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 2, Статус: Актуально
+2024-08-22 18:05:59,837 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:06:01,502 - INFO - Message with chart sent successfully to chat 34949444: 3972
+2024-08-22 18:06:01,502 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 2, Статус: Актуально
+2024-08-22 18:06:02,221 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:06:04,889 - INFO - Message with chart sent successfully to chat 34949444: 3973
+2024-08-22 18:06:04,889 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 2, Статус: Актуально
+2024-08-22 18:06:05,536 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:06:07,016 - INFO - Message with chart sent successfully to chat 34949444: 3974
+2024-08-22 18:06:07,016 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 2, Статус: Актуально
+2024-08-22 18:06:07,670 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:06:08,896 - INFO - Message with chart sent successfully to chat 34949444: 3975
+2024-08-22 18:06:08,898 - INFO - Закрытых сигналов нет.
+2024-08-22 18:10:27,656 - INFO - Запущена команда /delete_tables.
+2024-08-22 18:10:28,038 - INFO - Все таблицы удалены и заново созданы.
+2024-08-22 18:10:29,860 - INFO - Бот запускается.
+2024-08-22 18:10:29,990 - INFO - Выполнение начального анализа и отправка сигналов.
+2024-08-22 18:10:37,793 - INFO - Started sending messages for 4 signals.
+2024-08-22 18:10:37,936 - INFO - Sent message with timestamp and separator: 2024-08-22 18:10
+----------------------------------------
+2024-08-22 18:10:37,936 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:10:38,485 - ERROR - Error processing signal BTC/USDT: 'Unrecognized kwarg="label"'
+2024-08-22 18:10:38,485 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:10:38,977 - ERROR - Error processing signal ETH/USDT: 'Unrecognized kwarg="label"'
+2024-08-22 18:10:38,978 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:10:39,480 - ERROR - Error processing signal ADA/USDT: 'Unrecognized kwarg="label"'
+2024-08-22 18:10:39,480 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:10:40,004 - ERROR - Error processing signal TON/USDT: 'Unrecognized kwarg="label"'
+2024-08-22 18:10:40,193 - INFO - Периодическая проверка сигналов запущена.
+2024-08-22 18:15:13,550 - INFO - Запущена команда /delete_tables.
+2024-08-22 18:15:13,863 - INFO - Все таблицы удалены и заново созданы.
+2024-08-22 18:15:14,990 - INFO - Бот запускается.
+2024-08-22 18:15:15,252 - INFO - Выполнение начального анализа и отправка сигналов.
+2024-08-22 18:15:24,054 - INFO - Started sending messages for 4 signals.
+2024-08-22 18:15:24,202 - INFO - Sent message with timestamp and separator: 2024-08-22 18:15
+----------------------------------------
+2024-08-22 18:15:24,203 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:15:25,022 - ERROR - Error processing signal BTC/USDT: zero-size array to reduction operation maximum which has no identity
+2024-08-22 18:15:25,022 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:15:25,559 - ERROR - Error processing signal ETH/USDT: zero-size array to reduction operation maximum which has no identity
+2024-08-22 18:15:25,560 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:15:26,099 - ERROR - Error processing signal ADA/USDT: zero-size array to reduction operation maximum which has no identity
+2024-08-22 18:15:26,099 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:15:26,657 - ERROR - Error processing signal TON/USDT: zero-size array to reduction operation maximum which has no identity
+2024-08-22 18:15:26,822 - INFO - Периодическая проверка сигналов запущена.
+2024-08-22 18:18:47,479 - INFO - Запущена команда /delete_tables.
+2024-08-22 18:18:47,790 - INFO - Все таблицы удалены и заново созданы.
+2024-08-22 18:18:49,183 - INFO - Бот запускается.
+2024-08-22 18:18:49,375 - INFO - Выполнение начального анализа и отправка сигналов.
+2024-08-22 18:18:56,952 - INFO - Started sending messages for 4 signals.
+2024-08-22 18:18:57,080 - INFO - Sent message with timestamp and separator: 2024-08-22 18:18
+----------------------------------------
+2024-08-22 18:18:57,081 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:18:57,955 - ERROR - Error processing signal BTC/USDT: zero-size array to reduction operation maximum which has no identity
+2024-08-22 18:18:57,955 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:18:58,498 - ERROR - Error processing signal ETH/USDT: zero-size array to reduction operation maximum which has no identity
+2024-08-22 18:18:58,498 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:18:59,051 - ERROR - Error processing signal ADA/USDT: zero-size array to reduction operation maximum which has no identity
+2024-08-22 18:18:59,051 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:18:59,585 - ERROR - Error processing signal TON/USDT: zero-size array to reduction operation maximum which has no identity
+2024-08-22 18:18:59,698 - INFO - Периодическая проверка сигналов запущена.
+2024-08-22 18:24:05,130 - INFO - Запущена команда /delete_tables.
+2024-08-22 18:24:05,496 - INFO - Все таблицы удалены и заново созданы.
+2024-08-22 18:24:07,713 - INFO - Бот запускается.
+2024-08-22 18:24:07,828 - INFO - Выполнение начального анализа и отправка сигналов.
+2024-08-22 18:24:21,311 - INFO - Started sending messages for 4 signals.
+2024-08-22 18:24:21,457 - INFO - Sent message with timestamp and separator: 2024-08-22 18:24
+----------------------------------------
+2024-08-22 18:24:21,458 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:24:22,451 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:24:23,853 - INFO - Message with chart sent successfully to chat 34949444: 4007
+2024-08-22 18:24:23,853 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:24:24,507 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:24:25,835 - INFO - Message with chart sent successfully to chat 34949444: 4008
+2024-08-22 18:24:25,835 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:24:26,538 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:24:27,842 - INFO - Message with chart sent successfully to chat 34949444: 4009
+2024-08-22 18:24:27,843 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:24:28,529 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:24:30,019 - INFO - Message with chart sent successfully to chat 34949444: 4010
+2024-08-22 18:24:30,244 - INFO - Периодическая проверка сигналов запущена.
+2024-08-22 18:28:21,547 - INFO - Запущена команда /delete_tables.
+2024-08-22 18:28:21,940 - INFO - Все таблицы удалены и заново созданы.
+2024-08-22 18:28:23,019 - INFO - Бот запускается.
+2024-08-22 18:28:23,135 - INFO - Выполнение начального анализа и отправка сигналов.
+2024-08-22 18:28:30,129 - INFO - Started sending messages for 4 signals.
+2024-08-22 18:28:30,222 - INFO - Sent message with timestamp and separator: 2024-08-22 18:28
+----------------------------------------
+2024-08-22 18:28:30,222 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:28:31,123 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:28:32,663 - INFO - Message with chart sent successfully to chat 34949444: 4019
+2024-08-22 18:28:32,663 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:28:33,304 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:28:34,694 - INFO - Message with chart sent successfully to chat 34949444: 4020
+2024-08-22 18:28:34,694 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:28:35,376 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:28:39,276 - INFO - Message with chart sent successfully to chat 34949444: 4021
+2024-08-22 18:28:39,278 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:28:39,964 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:28:42,472 - INFO - Message with chart sent successfully to chat 34949444: 4022
+2024-08-22 18:28:42,573 - INFO - Периодическая проверка сигналов запущена.
+2024-08-22 18:29:46,724 - INFO - Обработка ожидающих сигналов.
+2024-08-22 18:29:46,727 - INFO - Используемый chat_id: 34949444
+2024-08-22 18:29:46,727 - INFO - Отправка 4 сигналов. Отправка актуальных сигналов включена.
+2024-08-22 18:29:47,045 - INFO - Отправлено сообщение с временной меткой и разделителем.
+2024-08-22 18:29:47,045 - INFO - Обнаружен новый сигнал с ID 1.
+2024-08-22 18:29:47,046 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:29:47,047 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:29:47,760 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:29:49,211 - INFO - Message with chart sent successfully to chat 34949444: 4026
+2024-08-22 18:29:49,215 - INFO - Увеличено count_sends для сигнала с ID 1. Затронуто строк: 1
+2024-08-22 18:29:49,215 - INFO - Успешно увеличено count_sends для сигнала с ID 1
+2024-08-22 18:29:49,218 - INFO - Сигнал с ID 1 отмечен как отправленный
+2024-08-22 18:29:49,218 - INFO - Обнаружен новый сигнал с ID 2.
+2024-08-22 18:29:49,218 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:29:49,218 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:29:49,893 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:29:51,403 - INFO - Message with chart sent successfully to chat 34949444: 4027
+2024-08-22 18:29:51,406 - INFO - Увеличено count_sends для сигнала с ID 2. Затронуто строк: 1
+2024-08-22 18:29:51,406 - INFO - Успешно увеличено count_sends для сигнала с ID 2
+2024-08-22 18:29:51,408 - INFO - Сигнал с ID 2 отмечен как отправленный
+2024-08-22 18:29:51,408 - INFO - Обнаружен новый сигнал с ID 3.
+2024-08-22 18:29:51,408 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:29:51,408 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:29:52,107 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:29:53,385 - INFO - Message with chart sent successfully to chat 34949444: 4028
+2024-08-22 18:29:53,389 - INFO - Увеличено count_sends для сигнала с ID 3. Затронуто строк: 1
+2024-08-22 18:29:53,389 - INFO - Успешно увеличено count_sends для сигнала с ID 3
+2024-08-22 18:29:53,391 - INFO - Сигнал с ID 3 отмечен как отправленный
+2024-08-22 18:29:53,391 - INFO - Обнаружен новый сигнал с ID 4.
+2024-08-22 18:29:53,391 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:29:53,391 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:29:54,071 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:29:55,220 - INFO - Message with chart sent successfully to chat 34949444: 4029
+2024-08-22 18:29:55,223 - INFO - Увеличено count_sends для сигнала с ID 4. Затронуто строк: 1
+2024-08-22 18:29:55,223 - INFO - Успешно увеличено count_sends для сигнала с ID 4
+2024-08-22 18:29:55,225 - INFO - Сигнал с ID 4 отмечен как отправленный
+2024-08-22 18:29:55,225 - INFO - Обработка отправки сигналов завершена.
+2024-08-22 18:30:51,749 - INFO - Обработка ожидающих сигналов.
+2024-08-22 18:30:51,752 - INFO - Используемый chat_id: 34949444
+2024-08-22 18:30:51,752 - INFO - Отправка 4 сигналов. Отправка актуальных сигналов включена.
+2024-08-22 18:30:52,065 - INFO - Отправлено сообщение с временной меткой и разделителем.
+2024-08-22 18:30:52,065 - INFO - Обнаружен актуальный сигнал с ID 1.
+2024-08-22 18:30:52,066 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:30:52,066 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 1, Статус: Актуально
+2024-08-22 18:30:52,778 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:30:54,194 - INFO - Message with chart sent successfully to chat 34949444: 4031
+2024-08-22 18:30:54,196 - INFO - Увеличено count_sends для сигнала с ID 1. Затронуто строк: 1
+2024-08-22 18:30:54,196 - INFO - Успешно увеличено count_sends для сигнала с ID 1
+2024-08-22 18:30:54,197 - INFO - Сигнал с ID 1 отмечен как отправленный
+2024-08-22 18:30:54,198 - INFO - Обнаружен актуальный сигнал с ID 2.
+2024-08-22 18:30:54,198 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:30:54,198 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 1, Статус: Актуально
+2024-08-22 18:30:54,859 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:30:56,161 - INFO - Message with chart sent successfully to chat 34949444: 4032
+2024-08-22 18:30:56,164 - INFO - Увеличено count_sends для сигнала с ID 2. Затронуто строк: 1
+2024-08-22 18:30:56,164 - INFO - Успешно увеличено count_sends для сигнала с ID 2
+2024-08-22 18:30:56,166 - INFO - Сигнал с ID 2 отмечен как отправленный
+2024-08-22 18:30:56,166 - INFO - Обнаружен актуальный сигнал с ID 3.
+2024-08-22 18:30:56,166 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:30:56,166 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 1, Статус: Актуально
+2024-08-22 18:30:57,037 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:30:58,222 - INFO - Message with chart sent successfully to chat 34949444: 4033
+2024-08-22 18:30:58,225 - INFO - Увеличено count_sends для сигнала с ID 3. Затронуто строк: 1
+2024-08-22 18:30:58,225 - INFO - Успешно увеличено count_sends для сигнала с ID 3
+2024-08-22 18:30:58,227 - INFO - Сигнал с ID 3 отмечен как отправленный
+2024-08-22 18:30:58,228 - INFO - Обнаружен актуальный сигнал с ID 4.
+2024-08-22 18:30:58,228 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:30:58,228 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 1, Статус: Актуально
+2024-08-22 18:30:58,892 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:31:00,038 - INFO - Message with chart sent successfully to chat 34949444: 4034
+2024-08-22 18:31:00,041 - INFO - Увеличено count_sends для сигнала с ID 4. Затронуто строк: 1
+2024-08-22 18:31:00,041 - INFO - Успешно увеличено count_sends для сигнала с ID 4
+2024-08-22 18:31:00,042 - INFO - Сигнал с ID 4 отмечен как отправленный
+2024-08-22 18:31:00,043 - INFO - Обработка отправки сигналов завершена.
+2024-08-22 18:33:35,095 - INFO - Запущена команда /delete_tables.
+2024-08-22 18:33:35,336 - INFO - Все таблицы удалены и заново созданы.
+2024-08-22 18:33:37,187 - INFO - Бот запускается.
+2024-08-22 18:33:37,304 - INFO - Выполнение начального анализа и отправка сигналов.
+2024-08-22 18:33:44,407 - INFO - Started sending messages for 4 signals.
+2024-08-22 18:33:44,510 - INFO - Sent message with timestamp and separator: 2024-08-22 18:33
+----------------------------------------
+2024-08-22 18:33:44,510 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:33:45,498 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:33:50,177 - INFO - Message with chart sent successfully to chat 34949444: 4041
+2024-08-22 18:33:50,178 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:33:50,846 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:33:52,510 - INFO - Message with chart sent successfully to chat 34949444: 4042
+2024-08-22 18:33:52,510 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:33:53,157 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:33:54,415 - INFO - Message with chart sent successfully to chat 34949444: 4043
+2024-08-22 18:33:54,415 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:33:55,058 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:33:56,379 - INFO - Message with chart sent successfully to chat 34949444: 4044
+2024-08-22 18:33:56,474 - INFO - Периодическая проверка сигналов запущена.
+2024-08-22 18:35:00,651 - INFO - Обработка ожидающих сигналов.
+2024-08-22 18:35:00,653 - INFO - Используемый chat_id: 34949444
+2024-08-22 18:35:00,653 - INFO - Отправка 4 сигналов. Отправка актуальных сигналов включена.
+2024-08-22 18:35:00,957 - INFO - Отправлено сообщение с временной меткой и разделителем.
+2024-08-22 18:35:00,957 - INFO - Обнаружен новый сигнал с ID 1.
+2024-08-22 18:35:00,958 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:35:00,958 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:35:01,680 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:35:03,389 - INFO - Message with chart sent successfully to chat 34949444: 4048
+2024-08-22 18:35:03,393 - INFO - Увеличено count_sends для сигнала с ID 1. Затронуто строк: 1
+2024-08-22 18:35:03,393 - INFO - Успешно увеличено count_sends для сигнала с ID 1
+2024-08-22 18:35:03,395 - INFO - Сигнал с ID 1 отмечен как отправленный
+2024-08-22 18:35:03,395 - INFO - Обнаружен новый сигнал с ID 2.
+2024-08-22 18:35:03,395 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:35:03,396 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:35:04,105 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:35:05,482 - INFO - Message with chart sent successfully to chat 34949444: 4049
+2024-08-22 18:35:05,483 - INFO - Увеличено count_sends для сигнала с ID 2. Затронуто строк: 1
+2024-08-22 18:35:05,483 - INFO - Успешно увеличено count_sends для сигнала с ID 2
+2024-08-22 18:35:05,484 - INFO - Сигнал с ID 2 отмечен как отправленный
+2024-08-22 18:35:05,485 - INFO - Обнаружен новый сигнал с ID 3.
+2024-08-22 18:35:05,485 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:35:05,485 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:35:06,184 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:35:07,726 - INFO - Message with chart sent successfully to chat 34949444: 4050
+2024-08-22 18:35:07,729 - INFO - Увеличено count_sends для сигнала с ID 3. Затронуто строк: 1
+2024-08-22 18:35:07,730 - INFO - Успешно увеличено count_sends для сигнала с ID 3
+2024-08-22 18:35:07,732 - INFO - Сигнал с ID 3 отмечен как отправленный
+2024-08-22 18:35:07,732 - INFO - Обнаружен новый сигнал с ID 4.
+2024-08-22 18:35:07,732 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:35:07,732 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:35:08,396 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:35:09,529 - INFO - Message with chart sent successfully to chat 34949444: 4051
+2024-08-22 18:35:09,532 - INFO - Увеличено count_sends для сигнала с ID 4. Затронуто строк: 1
+2024-08-22 18:35:09,532 - INFO - Успешно увеличено count_sends для сигнала с ID 4
+2024-08-22 18:35:09,534 - INFO - Сигнал с ID 4 отмечен как отправленный
+2024-08-22 18:35:09,534 - INFO - Обработка отправки сигналов завершена.
+2024-08-22 18:36:00,604 - INFO - Обработка ожидающих сигналов.
+2024-08-22 18:36:00,606 - INFO - Используемый chat_id: 34949444
+2024-08-22 18:36:00,606 - INFO - Отправка 4 сигналов. Отправка актуальных сигналов включена.
+2024-08-22 18:36:00,924 - INFO - Отправлено сообщение с временной меткой и разделителем.
+2024-08-22 18:36:00,924 - INFO - Обнаружен актуальный сигнал с ID 1.
+2024-08-22 18:36:00,924 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:36:00,924 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 1, Статус: Актуально
+2024-08-22 18:36:01,655 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:36:03,192 - INFO - Message with chart sent successfully to chat 34949444: 4053
+2024-08-22 18:36:03,195 - INFO - Увеличено count_sends для сигнала с ID 1. Затронуто строк: 1
+2024-08-22 18:36:03,195 - INFO - Успешно увеличено count_sends для сигнала с ID 1
+2024-08-22 18:36:03,197 - INFO - Сигнал с ID 1 отмечен как отправленный
+2024-08-22 18:36:03,197 - INFO - Обнаружен актуальный сигнал с ID 2.
+2024-08-22 18:36:03,197 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:36:03,197 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 1, Статус: Актуально
+2024-08-22 18:36:03,849 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:36:05,334 - INFO - Message with chart sent successfully to chat 34949444: 4054
+2024-08-22 18:36:05,336 - INFO - Увеличено count_sends для сигнала с ID 2. Затронуто строк: 1
+2024-08-22 18:36:05,336 - INFO - Успешно увеличено count_sends для сигнала с ID 2
+2024-08-22 18:36:05,338 - INFO - Сигнал с ID 2 отмечен как отправленный
+2024-08-22 18:36:05,338 - INFO - Обнаружен актуальный сигнал с ID 3.
+2024-08-22 18:36:05,338 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:36:05,338 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 1, Статус: Актуально
+2024-08-22 18:36:06,154 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:36:07,687 - INFO - Message with chart sent successfully to chat 34949444: 4055
+2024-08-22 18:36:07,692 - INFO - Увеличено count_sends для сигнала с ID 3. Затронуто строк: 1
+2024-08-22 18:36:07,692 - INFO - Успешно увеличено count_sends для сигнала с ID 3
+2024-08-22 18:36:07,694 - INFO - Сигнал с ID 3 отмечен как отправленный
+2024-08-22 18:36:07,695 - INFO - Обнаружен актуальный сигнал с ID 4.
+2024-08-22 18:36:07,695 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:36:07,695 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 1, Статус: Актуально
+2024-08-22 18:36:08,378 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:36:09,751 - INFO - Message with chart sent successfully to chat 34949444: 4056
+2024-08-22 18:36:09,764 - INFO - Увеличено count_sends для сигнала с ID 4. Затронуто строк: 1
+2024-08-22 18:36:09,765 - INFO - Успешно увеличено count_sends для сигнала с ID 4
+2024-08-22 18:36:09,766 - INFO - Сигнал с ID 4 отмечен как отправленный
+2024-08-22 18:36:09,766 - INFO - Обработка отправки сигналов завершена.
+2024-08-22 18:37:00,681 - INFO - Обработка ожидающих сигналов.
+2024-08-22 18:37:00,683 - INFO - Используемый chat_id: 34949444
+2024-08-22 18:37:00,683 - INFO - Отправка 4 сигналов. Отправка актуальных сигналов включена.
+2024-08-22 18:37:01,104 - INFO - Отправлено сообщение с временной меткой и разделителем.
+2024-08-22 18:37:01,104 - INFO - Обнаружен актуальный сигнал с ID 1.
+2024-08-22 18:37:01,104 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:37:01,105 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 2, Статус: Актуально
+2024-08-22 18:37:01,778 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:37:03,286 - INFO - Message with chart sent successfully to chat 34949444: 4058
+2024-08-22 18:37:03,289 - INFO - Увеличено count_sends для сигнала с ID 1. Затронуто строк: 1
+2024-08-22 18:37:03,289 - INFO - Успешно увеличено count_sends для сигнала с ID 1
+2024-08-22 18:37:03,291 - INFO - Сигнал с ID 1 отмечен как отправленный
+2024-08-22 18:37:03,291 - INFO - Обнаружен актуальный сигнал с ID 2.
+2024-08-22 18:37:03,291 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:37:03,291 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 2, Статус: Актуально
+2024-08-22 18:37:03,998 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:37:05,564 - INFO - Message with chart sent successfully to chat 34949444: 4059
+2024-08-22 18:37:05,567 - INFO - Увеличено count_sends для сигнала с ID 2. Затронуто строк: 1
+2024-08-22 18:37:05,567 - INFO - Успешно увеличено count_sends для сигнала с ID 2
+2024-08-22 18:37:05,569 - INFO - Сигнал с ID 2 отмечен как отправленный
+2024-08-22 18:37:05,569 - INFO - Обнаружен актуальный сигнал с ID 3.
+2024-08-22 18:37:05,569 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:37:05,569 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 2, Статус: Актуально
+2024-08-22 18:37:06,268 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:37:07,731 - INFO - Message with chart sent successfully to chat 34949444: 4060
+2024-08-22 18:37:07,733 - INFO - Увеличено count_sends для сигнала с ID 3. Затронуто строк: 1
+2024-08-22 18:37:07,733 - INFO - Успешно увеличено count_sends для сигнала с ID 3
+2024-08-22 18:37:07,735 - INFO - Сигнал с ID 3 отмечен как отправленный
+2024-08-22 18:37:07,735 - INFO - Обнаружен актуальный сигнал с ID 4.
+2024-08-22 18:37:07,735 - INFO - Started sending messages for 1 signals.
+2024-08-22 18:37:07,735 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 2, Статус: Актуально
+2024-08-22 18:37:08,819 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:37:10,166 - INFO - Message with chart sent successfully to chat 34949444: 4061
+2024-08-22 18:37:10,169 - INFO - Увеличено count_sends для сигнала с ID 4. Затронуто строк: 1
+2024-08-22 18:37:10,169 - INFO - Успешно увеличено count_sends для сигнала с ID 4
+2024-08-22 18:37:10,171 - INFO - Сигнал с ID 4 отмечен как отправленный
+2024-08-22 18:37:10,171 - INFO - Обработка отправки сигналов завершена.
+2024-08-22 18:38:07,965 - INFO - Запущена команда /delete_tables.
+2024-08-22 18:38:08,195 - INFO - Все таблицы удалены и заново созданы.
+2024-08-22 18:38:09,155 - INFO - Бот запускается.
+2024-08-22 18:38:09,336 - INFO - Выполнение начального анализа и отправка сигналов.
+2024-08-22 18:38:17,454 - INFO - Started sending messages for 4 signals.
+2024-08-22 18:38:17,595 - INFO - Sent message with timestamp and separator: 2024-08-22 18:38
+----------------------------------------
+2024-08-22 18:38:17,596 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:38:18,434 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:38:19,835 - INFO - Message with chart sent successfully to chat 34949444: 4068
+2024-08-22 18:38:19,835 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:38:20,500 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:38:23,262 - INFO - Message with chart sent successfully to chat 34949444: 4069
+2024-08-22 18:38:23,263 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:38:23,901 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:38:27,930 - INFO - Message with chart sent successfully to chat 34949444: 4070
+2024-08-22 18:38:27,931 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:38:28,596 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:38:30,043 - INFO - Message with chart sent successfully to chat 34949444: 4071
+2024-08-22 18:38:30,206 - INFO - Периодическая проверка сигналов запущена.
+2024-08-22 18:41:05,437 - INFO - Запущена команда /delete_tables.
+2024-08-22 18:41:05,788 - INFO - Все таблицы удалены и заново созданы.
+2024-08-22 18:41:10,537 - INFO - Бот запускается.
+2024-08-22 18:41:10,632 - INFO - Выполнение начального анализа и отправка сигналов.
+2024-08-22 18:41:17,753 - INFO - Started sending messages for 4 signals.
+2024-08-22 18:41:17,850 - INFO - Sent message with timestamp and separator: 2024-08-22 18:41
+----------------------------------------
+2024-08-22 18:41:17,850 - INFO - Форматирование сигнала: BTC/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:41:18,697 - INFO - Chart for BTC/USDT generated successfully.
+2024-08-22 18:41:20,208 - INFO - Message with chart sent successfully to chat 34949444: 4080
+2024-08-22 18:41:20,208 - INFO - Форматирование сигнала: ETH/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:41:20,838 - INFO - Chart for ETH/USDT generated successfully.
+2024-08-22 18:41:22,179 - INFO - Message with chart sent successfully to chat 34949444: 4081
+2024-08-22 18:41:22,179 - INFO - Форматирование сигнала: ADA/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:41:22,833 - INFO - Chart for ADA/USDT generated successfully.
+2024-08-22 18:41:24,212 - INFO - Message with chart sent successfully to chat 34949444: 4082
+2024-08-22 18:41:24,212 - INFO - Форматирование сигнала: TON/USDT, Count Sends: 0, Статус: Новый сигнал
+2024-08-22 18:41:24,849 - INFO - Chart for TON/USDT generated successfully.
+2024-08-22 18:41:26,646 - INFO - Message with chart sent successfully to chat 34949444: 4083
+2024-08-22 18:41:26,735 - INFO - Периодическая проверка сигналов запущена.
