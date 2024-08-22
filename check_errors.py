@@ -1,6 +1,5 @@
 import subprocess
 import os
-import re
 
 def run_flake8_and_save_output():
     # Определяем путь к файлу для сохранения результатов
@@ -9,14 +8,18 @@ def run_flake8_and_save_output():
     output_file = os.path.join(log_dir, 'check_errors.txt')
 
     try:
-        # Запускаем flake8 с фильтром по критичным ошибкам
-        result = subprocess.run(['flake8', '--select=E,F'], stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT, text=True)
+        # Запускаем flake8 с исключением каталога .venv и фильтром по критичным ошибкам
+        result = subprocess.run(
+            ['flake8', '--select=F', '--exclude=.venv'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
 
-        # Отфильтровываем все PEP8 сообщения и ошибки в директории .venv
+        # Отфильтровываем все сообщения, начинающиеся на E
         filtered_output = "\n".join(
             line for line in result.stdout.splitlines()
-            if not re.match(r'^[EW]\d+', line) and '.venv/' not in line
+            if not line.startswith('E')
         )
 
         # Записываем результат в файл только если есть другие критичные ошибки
@@ -25,13 +28,12 @@ def run_flake8_and_save_output():
                 file.write(filtered_output)
             print(f"Результаты анализа сохранены в {output_file}")
         else:
-            print("Критичных ошибок, связанных с PEP или в директории '.venv', не обнаружено.")
+            print("Критичных ошибок не обнаружено.")
 
     except subprocess.CalledProcessError as e:
         print(f"Возникла ошибка при выполнении flake8: {e}")
     except Exception as e:
         print(f"Возникла непредвиденная ошибка: {e}")
-
 
 if __name__ == "__main__":
     print("Запуск flake8 для анализа кода и сохранения результатов...")

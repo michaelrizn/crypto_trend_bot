@@ -78,6 +78,9 @@ def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=No
         elif trend.lower() == 'short':
             signal_start_series.iloc[signal_start_index] = df['high'].max() * 1.02
             apds.append(mpf.make_addplot(signal_start_series, type='scatter', markersize=100, marker='v', color='r'))
+        elif trend.lower() == 'neutral':
+            signal_start_series.iloc[signal_start_index] = df['high'].max() * 1.02
+            apds.append(mpf.make_addplot(signal_start_series, type='scatter', markersize=100, marker='o', color='gray'))
 
     fig, axes = mpf.plot(df, type='candle', style=s, addplot=apds,
                          title=f'Trend: {trend.capitalize()}',

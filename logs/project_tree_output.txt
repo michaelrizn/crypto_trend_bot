@@ -1,5 +1,6 @@
 Project Tree Structure:
 ├── crypto_trend_bot/
+│   ├── .DS_Store
 │   ├── config.py
 │   ├── requirements.txt
 │   ├── Dockerfile
@@ -67,8 +68,8 @@ Project Tree Structure:
 │   │   │   ├── signal_manager.cpython-311.pyc
 │   │   │   └── trend_analyzer.cpython-311.pyc
 │   │   ├── crypto_api.py
+│   │   ├── model_analyzer.py
 │   │   ├── signal_manager.py
-│   │   ├── tinyml_analyzer.py
 │   │   └── trend_analyzer.py
 │   ├── utils/
 │   │   ├── __pycache__/
@@ -83,6 +84,7 @@ Project Tree Structure:
 
 ================================================================================
 
+Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/.DS_Store: 'utf-8' codec can't decode byte 0xf4 in position 661: invalid continuation byte
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/config.py
 File Name: config.py
 Code:
@@ -128,13 +130,16 @@ APScheduler==3.10.4
 matplotlib==3.7.2
 pytz==2023.3
 tabulate==0.9.0
-tensorflow==2.13.0
+tensorflow
+tensorflow-hub
 pandas==1.5.3
 mplfinance==0.12.9b7
 sqlalchemy
 flake8
 scipy
 telebot
+torch
+transformers
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/Dockerfile
 File Name: Dockerfile
@@ -159,7 +164,6 @@ File Name: check_errors.py
 Code:
 import subprocess
 import os
-import re
 
 def run_flake8_and_save_output():
     # Определяем путь к файлу для сохранения результатов
@@ -168,14 +172,18 @@ def run_flake8_and_save_output():
     output_file = os.path.join(log_dir, 'check_errors.txt')
 
     try:
-        # Запускаем flake8 с фильтром по критичным ошибкам
-        result = subprocess.run(['flake8', '--select=E,F'], stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT, text=True)
+        # Запускаем flake8 с исключением каталога .venv и фильтром по критичным ошибкам
+        result = subprocess.run(
+            ['flake8', '--select=F', '--exclude=.venv'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
 
-        # Отфильтровываем все PEP8 сообщения и ошибки в директории .venv
+        # Отфильтровываем все сообщения, начинающиеся на E
         filtered_output = "\n".join(
             line for line in result.stdout.splitlines()
-            if not re.match(r'^[EW]\d+', line) and '.venv/' not in line
+            if not line.startswith('E')
         )
 
         # Записываем результат в файл только если есть другие критичные ошибки
@@ -184,13 +192,12 @@ def run_flake8_and_save_output():
                 file.write(filtered_output)
             print(f"Результаты анализа сохранены в {output_file}")
         else:
-            print("Критичных ошибок, связанных с PEP или в директории '.venv', не обнаружено.")
+            print("Критичных ошибок не обнаружено.")
 
     except subprocess.CalledProcessError as e:
         print(f"Возникла ошибка при выполнении flake8: {e}")
     except Exception as e:
         print(f"Возникла непредвиденная ошибка: {e}")
-
 
 if __name__ == "__main__":
     print("Запуск flake8 для анализа кода и сохранения результатов...")
@@ -230,6 +237,7 @@ async def main():
 if __name__ == "__main__":
     logging.info("Запуск приложения.")
     asyncio.run(main())
+
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/__init__.py
 File Name: __init__.py
@@ -1176,7 +1184,6 @@ import sqlite3
 from config import DB_NAME
 from utils.logger import general_logger
 from typing import Any
-from sqlalchemy.orm import Session
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)
@@ -1223,18 +1230,34 @@ def delete_all_tables():
     conn.commit()
     conn.close()
 
-def insert_signal(pair, trend_signal, session: Session):
-    signal = Signal(name=pair, trend=trend_signal)
-    session.add(signal)
-    session.commit()
+def insert_signal(name, trend, date_start, price_start, accuracy):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
 
-def update_signal(pair, current_time, current_price, accuracy, session: Session):
-    signal = session.query(Signal).filter_by(name=pair, active=True).first()
-    if signal:
-        signal.price_end = current_price
-        signal.time_end = current_time
-        signal.accuracy = accuracy
-        session.commit()
+    c.execute('''SELECT * FROM signals 
+                 WHERE name = ? AND date_end IS NULL''', (name,))
+    existing_signal = c.fetchone()
+
+    if not existing_signal:
+        accuracy = max(1, min(100, int(accuracy)))
+        c.execute('''INSERT INTO signals 
+                     (name, trend, date_start, date_last, accuracy, price_start, price_last, count_sends)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                  (name, trend, date_start, date_start, accuracy, price_start, price_start, 0))
+
+    conn.commit()
+    conn.close()
+
+def update_signal(name, date_last, price_last, accuracy):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    accuracy = max(1, min(100, int(accuracy)))
+    c.execute('''UPDATE signals
+                 SET date_last = ?, price_last = ?, accuracy = ?
+                 WHERE name = ? AND date_end IS NULL''',
+              (date_last, price_last, accuracy, name))
+    conn.commit()
+    conn.close()
 
 def increment_count_sends(signal_id: Any) -> bool:
     """
@@ -1274,9 +1297,15 @@ def get_closed_signals():
     conn.close()
     return signals
 
-def close_signal(signal, session: Session):
-    signal.active = False
-    session.commit()
+def close_signal(name, date_end, price_end):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('''UPDATE signals
+                 SET date_end = ?, price_end = ?
+                 WHERE name = ? AND date_end IS NULL''',
+              (date_end, price_end, name))
+    conn.commit()
+    conn.close()
 
 def mark_signal_as_reported(signal_id):
     conn = sqlite3.connect(DB_NAME)
@@ -1318,8 +1347,16 @@ def fetch_all_signals():
     conn.close()
     return signals
 
-def get_active_signal(pair, session: Session):
-    return session.query(Signal).filter_by(name=pair, active=True).first()
+def get_active_signal(name):
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute('''SELECT id, name, trend, date_start, date_last, accuracy, date_end, 
+                 price_start, price_last, price_end, count_sends, reported 
+                 FROM signals 
+                 WHERE name = ? AND date_end IS NULL''', (name,))
+    signal_data = c.fetchone()
+    conn.close()
+    return Signal(*signal_data) if signal_data else None
 
 def store_signals_for_sending(new_signals, updated_signals, closed_signals):
     conn = sqlite3.connect(DB_NAME)
@@ -1416,149 +1453,198 @@ async def get_current_price(symbol):
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/signal_manager.py
 File Name: signal_manager.py
 Code:
-from database.db_handler import insert_signal, update_signal, close_signal, get_active_signal
+from database.db_handler import insert_signal, update_signal, close_signal, get_active_signals, get_active_signal
 from services.crypto_api import get_ohlcv, get_current_price
 from services.trend_analyzer import analyze_trend, is_trend_still_valid
 from utils.time_utils import get_current_time
-from sqlalchemy import create_engine
+from database.models import Signal
 from sqlalchemy.orm import sessionmaker
-import logging
-from utils.logger import log_signal_processing
+from sqlalchemy import create_engine
+from utils.logger import analyze_logger, general_logger
 
-engine = create_engine('sqlite:///price_trend_db.sqlite')
+engine = create_engine('sqlite:///path_to_your_db.sqlite')
 Session = sessionmaker(bind=engine)
 session = Session()
 
 async def check_and_create_signals(crypto_pairs):
-    logging.info("Проверка и создание новых сигналов.")
+    general_logger.info("Проверка и создание новых сигналов.")
+    analyze_logger.info("Начало процесса проверки и создания сигналов")
     new_signals = []
     updated_signals = []
     closed_signals = []
 
     for pair in crypto_pairs:
-        logging.info(f"Проверка пары: {pair}")
+        analyze_logger.info(f"Анализ пары: {pair}")
         ohlcv = await get_ohlcv(pair)
+        if ohlcv:
+            trend, accuracy = analyze_trend(ohlcv)
+            existing_signal = get_active_signal(pair)
+            current_price = await get_current_price(pair)
+            current_time = get_current_time()
 
-        trend_signal = analyze_trend(ohlcv)
-        log_signal_processing(f"Получен сигнал для пары {pair}: {trend_signal}")
-
-        active_signal = get_active_signal(pair, session)
-
-        if active_signal:
-            if trend_signal == "close":
-                close_signal(active_signal, session)
-                closed_signals.append(pair)
+            if existing_signal:
+                if existing_signal.trend == trend:
+                    update_signal(pair, current_time, current_price, accuracy)
+                    updated_signals.append(existing_signal)
+                    analyze_logger.info(f"Обновлен существующий сигнал для пары {pair}: {trend} с точностью {accuracy}")
+                else:
+                    close_signal(pair, current_time, current_price)
+                    closed_signals.append(existing_signal)
+                    insert_signal(pair, trend, current_time, current_price, accuracy)
+                    new_signal = get_active_signal(pair)
+                    new_signals.append(new_signal)
+                    analyze_logger.info(f"Закрыт старый сигнал и создан новый для пары {pair}: {trend} с точностью {accuracy}")
             else:
-                update_signal(pair, get_current_time(), get_current_price(pair), trend_signal, session)
-                updated_signals.append(pair)
+                insert_signal(pair, trend, current_time, current_price, accuracy)
+                new_signal = get_active_signal(pair)
+                new_signals.append(new_signal)
+                analyze_logger.info(f"Создан новый сигнал для пары {pair}: {trend} с точностью {accuracy}")
         else:
-            if trend_signal != "neutral":
-                insert_signal(pair, trend_signal, session)
-                new_signals.append(pair)
+            analyze_logger.warning(f"Не удалось получить данные OHLCV для пары {pair}. Пропуск.")
 
+    analyze_logger.info("Завершение процесса проверки и создания сигналов")
     return new_signals, updated_signals, closed_signals
 
-async def update_active_signals():
-    logging.info("Обновление активных сигналов.")
-    active_signals = get_active_signal(session)
-
+def update_active_signals():
+    general_logger.info("Обновление активных сигналов.")
+    analyze_logger.info("Начало обновления активных сигналов")
+    active_signals = get_active_signals()
     for signal in active_signals:
         pair = signal.name
-        logging.info(f"Актуализация сигнала для пары: {pair}")
-        ohlcv = await get_ohlcv(pair)
-
+        analyze_logger.info(f"Актуализация сигнала для пары: {pair}")
+        ohlcv = get_ohlcv(pair)
         if ohlcv:
             if is_trend_still_valid(ohlcv, signal.trend):
-                logging.info(f"Сигнал для пары {pair} всё ещё актуален.")
+                analyze_logger.info(f"Сигнал для пары {pair} всё ещё актуален")
                 current_price = get_current_price(pair)
                 current_time = get_current_time()
-                accuracy = analyze_trend(ohlcv)
-                update_signal(pair, current_time, current_price, accuracy, session)
+                _, accuracy = analyze_trend(ohlcv)
+                update_signal(pair, current_time, current_price, accuracy)
             else:
-                logging.info(f"Сигнал для пары {pair} больше не актуален.")
+                analyze_logger.info(f"Сигнал для пары {pair} больше не актуален")
                 current_price = get_current_price(pair)
                 current_time = get_current_time()
-                close_signal(signal, session)
+                close_signal(pair, current_time, current_price)
+        else:
+            analyze_logger.warning(f"Не удалось получить данные OHLCV для пары {pair}. Пропуск.")
+    analyze_logger.info("Завершение обновления активных сигналов")
 
-def process_signals(data):
-    log_signal_processing("Processing signals")
+async def update_signal_in_db(signal):
+    try:
+        existing_signal = session.query(Signal).get(signal.id)
+        if existing_signal:
+            existing_signal.trend = signal.trend
+            existing_signal.accuracy = signal.accuracy
+            existing_signal.close_value = signal.close_value
+            session.commit()
+            analyze_logger.info(f"Обновлен сигнал в БД: ID {signal.id}, тренд {signal.trend}, точность {signal.accuracy}")
+        else:
+            analyze_logger.error(f"Сигнал с ID {signal.id} не найден в базе данных.")
+    except Exception as e:
+        analyze_logger.error(f"Ошибка при обновлении сигнала в базе данных: {e}")
 
-    trend_signal = analyze_trend(data)
-    log_signal_processing(f"Trend signal: {trend_signal}")
-
-    if trend_signal == "long":
-        log_signal_processing("Signal: Buy")
-    elif trend_signal == "short":
-        log_signal_processing("Signal: Sell")
-    else:
-        log_signal_processing("Signal: Hold")
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/trend_analyzer.py
 File Name: trend_analyzer.py
 Code:
-import logging
 import numpy as np
-from .tinyml_analyzer import run_tinyml_model
-from utils.logger import log_analyze_step
+from utils.logger import analyze_logger
+from services.model_analyzer import PatchTSMixerAnalyzer
 
-def analyze_trend(data):
-    log_analyze_step("Starting trend analysis")
+def analyze_trend(ohlcv_data):
+    analyze_logger.info("Начало анализа тренда")
+    if not ohlcv_data:
+        analyze_logger.warning("Нет данных для анализа")
+        return None, 0
 
-    ma20 = data['close'].rolling(window=20).mean()
-    ma50 = data['close'].rolling(window=50).mean()
-    trend_signal = "neutral"
+    patchtsmixer_analyzer = PatchTSMixerAnalyzer('patchtsmixer-etth1-pretrain')
+    patchtsmixer_result = patchtsmixer_analyzer.analyze(ohlcv_data)
 
-    if ma20.iloc[-1] > ma50.iloc[-1]:
-        trend_signal = "long"
-    elif ma20.iloc[-1] < ma50.iloc[-1]:
-        trend_signal = "short"
+    closes = np.array([x[4] for x in ohlcv_data])
+    ma_short = np.mean(closes[-24:])
+    ma_long = np.mean(closes)
 
-    log_analyze_step(f"MA20: {ma20.iloc[-1]}, MA50: {ma50.iloc[-1]}, Initial trend signal: {trend_signal}")
+    analyze_logger.info(f"Короткая MA: {ma_short}, Длинная MA: {ma_long}")
 
-    tinyml_result = run_tinyml_model(data)
-    log_analyze_step(f"TinyML result: {tinyml_result}")
-
-    if tinyml_result == "long" and trend_signal == "short":
-        trend_signal = "neutral"
-    elif tinyml_result == "short" and trend_signal == "long":
-        trend_signal = "neutral"
+    if ma_short > ma_long:
+        trend = "long"
+    elif ma_short < ma_long:
+        trend = "short"
     else:
-        trend_signal = tinyml_result
+        trend = None
 
-    log_analyze_step(f"Final trend signal after TinyML: {trend_signal}")
-    return trend_signal
+    diff = abs(ma_short - ma_long)
+    max_diff = max(closes) - min(closes)
+    accuracy = int((1 - diff / max_diff) * 100) if max_diff != 0 else 50
+    accuracy = max(1, min(100, accuracy))
 
-def is_trend_still_valid(data, current_trend):
-    ma20 = data['close'].rolling(window=20).mean().iloc[-1]
-    ma50 = data['close'].rolling(window=50).mean().iloc[-1]
+    if patchtsmixer_result['trend'] is not None:
+        trend = patchtsmixer_result['trend']
+        accuracy = patchtsmixer_result['accuracy']
 
-    if current_trend == "long" and ma20 > ma50:
+    return trend, accuracy
+
+def is_trend_still_valid(ohlcv_data, trend):
+    closes = [x[4] for x in ohlcv_data]
+    ma_current = sum(closes[-24:]) / 24
+    if trend == "long" and ma_current > sum(closes) / len(closes):
         return True
-    elif current_trend == "short" and ma20 < ma50:
+    elif trend == "short" and ma_current < sum(closes) / len(closes):
         return True
-    else:
-        return False
+    return False
 --------------------------------------------------------------------------------
-Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/tinyml_analyzer.py
-File Name: tinyml_analyzer.py
+Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/model_analyzer.py
+File Name: model_analyzer.py
 Code:
-import logging
-import numpy as np
-from utils.logger import log_tinyml_step
+import torch
+from transformers import PatchTSMixerConfig, PatchTSMixerForPrediction
+from utils.logger import analyze_logger
 
-def run_tinyml_model(data):
-    log_tinyml_step("Running TinyML model")
 
-    # Пример простой модели анализа
-    mean_price = data['close'].mean()
-    log_tinyml_step(f"Mean price: {mean_price}")
+class PatchTSMixerAnalyzer:
+    def __init__(self, model_path):
+        config = PatchTSMixerConfig(
+            context_length=48,
+            prediction_length=96,
+            num_input_channels=1,
+            patch_length=8,
+            d_model=16,
+            num_layers=8,
+            dropout=0.2
+        )
+        self.model = PatchTSMixerForPrediction.from_pretrained(
+            model_path,
+            config=config,
+            ignore_mismatched_sizes=True
+        )
+        self.model.eval()
 
-    if mean_price > data['close'].iloc[-1]:
-        log_tinyml_step("TinyML model suggests: short")
-        return "short"
-    else:
-        log_tinyml_step("TinyML model suggests: long")
-        return "long"
+    def analyze(self, data):
+        if self.model is None:
+            analyze_logger.warning("PatchTSMixer модель не загружена, пропуск анализа")
+            return {'trend': None, 'accuracy': 0}
+
+        data_tensor = torch.tensor(data, dtype=torch.float32).unsqueeze(0)
+        data_tensor = self.pad_sequence(data_tensor, target_length=48)
+
+        with torch.no_grad():
+            output = self.model(past_values=data_tensor)
+            predictions = output.prediction_outputs.numpy()
+
+        trend = "long" if predictions.mean() > 0.5 else "short"
+        accuracy = int(predictions.mean() * 100)
+
+        return {'trend': trend, 'accuracy': accuracy}
+
+    def pad_sequence(self, data_tensor, target_length=512):
+        current_length = data_tensor.size(1)
+        if current_length < target_length:
+            padding_length = target_length - current_length
+            padding = torch.zeros((data_tensor.size(0), padding_length, data_tensor.size(2)))
+            data_tensor = torch.cat((padding, data_tensor), dim=1)
+        elif current_length > target_length:
+            data_tensor = data_tensor[:, -target_length:, :]
+        return data_tensor
 --------------------------------------------------------------------------------
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/__pycache__/crypto_api.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/__pycache__/trend_analyzer.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
@@ -1597,18 +1683,6 @@ Code:
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
-
-logging.basicConfig(filename='logs/analyze.log', level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-
-def log_analyze_step(message):
-    logging.info(f"ANALYZE: {message}")
-
-def log_tinyml_step(message):
-    logging.info(f"TINYML: {message}")
-
-def log_signal_processing(message):
-    logging.info(f"SIGNAL PROCESSING: {message}")
 
 def setup_logging():
     log_dir = Path(__file__).parents[1] / 'logs'

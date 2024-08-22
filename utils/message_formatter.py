@@ -14,9 +14,17 @@ def add_timestamp_and_separator(message):
 
 def format_new_signal_message(signal, is_new=False):
     status = "Новый сигнал" if signal.count_sends == 0 else "Актуально"
-    trend_emoji = "🟢" if signal.trend.lower() == "long" else "🔴"
+
+    if signal.trend.lower() == "long":
+        trend_emoji = "🟢"
+    elif signal.trend.lower() == "short":
+        trend_emoji = "🔴"
+    else:
+        trend_emoji = "⚪"  # Серый круг для нейтрального тренда
+
     price_change = ((signal.price_last - signal.price_start) / signal.price_start) * 100
-    price_change_sign = "+" if (signal.trend.lower() == "long" and price_change > 0) or (signal.trend.lower() == "short" and price_change < 0) else "-"
+    price_change_sign = "+" if (signal.trend.lower() == "long" and price_change > 0) or (
+                signal.trend.lower() == "short" and price_change < 0) else "-"
     price_change_str = f"{price_change_sign}{abs(price_change):.2f}%"
 
     general_logger.info(
@@ -29,10 +37,16 @@ def format_new_signal_message(signal, is_new=False):
 
 
 def format_closed_signal_message(signal):
-    trend_emoji = "🟢" if signal.trend.lower() == "long" else "🔴"
+    if signal.trend.lower() == "long":
+        trend_emoji = "🟢"
+    elif signal.trend.lower() == "short":
+        trend_emoji = "🔴"
+    else:
+        trend_emoji = "⚪️"  # Серый круг для нейтрального тренда
+
     price_change = ((signal.price_end - signal.price_start) / signal.price_start) * 100
     price_change_sign = "+" if (signal.trend.lower() == "long" and price_change > 0) or (
-                signal.trend.lower() == "short" and price_change < 0) else "-"
+            signal.trend.lower() == "short" and price_change < 0) else "-"
     price_change_str = f"{price_change_sign}{abs(price_change):.2f}%"
 
     return f"❌Сигнал закрыт: {signal.name} {trend_emoji} {signal.trend.upper()}\n" \
