@@ -1,6 +1,6 @@
 import subprocess
 import os
-
+import re
 
 def run_flake8_and_save_output():
     # Определяем путь к файлу для сохранения результатов
@@ -13,9 +13,10 @@ def run_flake8_and_save_output():
         result = subprocess.run(['flake8', '--select=E,F'], stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT, text=True)
 
-        # Отфильтровываем все сообщения, начинающиеся на E
+        # Отфильтровываем все PEP8 сообщения и ошибки в директории .venv
         filtered_output = "\n".join(
-            line for line in result.stdout.splitlines() if not line.startswith('E')
+            line for line in result.stdout.splitlines()
+            if not re.match(r'^[EW]\d+', line) and '.venv/' not in line
         )
 
         # Записываем результат в файл только если есть другие критичные ошибки
@@ -24,7 +25,7 @@ def run_flake8_and_save_output():
                 file.write(filtered_output)
             print(f"Результаты анализа сохранены в {output_file}")
         else:
-            print("Критичных ошибок, начинающихся с 'E', не обнаружено.")
+            print("Критичных ошибок, связанных с PEP или в директории '.venv', не обнаружено.")
 
     except subprocess.CalledProcessError as e:
         print(f"Возникла ошибка при выполнении flake8: {e}")

@@ -134,6 +134,7 @@ mplfinance==0.12.9b7
 sqlalchemy
 flake8
 scipy
+telebot
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/Dockerfile
 File Name: Dockerfile
@@ -158,7 +159,7 @@ File Name: check_errors.py
 Code:
 import subprocess
 import os
-
+import re
 
 def run_flake8_and_save_output():
     # Определяем путь к файлу для сохранения результатов
@@ -171,9 +172,10 @@ def run_flake8_and_save_output():
         result = subprocess.run(['flake8', '--select=E,F'], stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT, text=True)
 
-        # Отфильтровываем все сообщения, начинающиеся на E
+        # Отфильтровываем все PEP8 сообщения и ошибки в директории .venv
         filtered_output = "\n".join(
-            line for line in result.stdout.splitlines() if not line.startswith('E')
+            line for line in result.stdout.splitlines()
+            if not re.match(r'^[EW]\d+', line) and '.venv/' not in line
         )
 
         # Записываем результат в файл только если есть другие критичные ошибки
@@ -182,7 +184,7 @@ def run_flake8_and_save_output():
                 file.write(filtered_output)
             print(f"Результаты анализа сохранены в {output_file}")
         else:
-            print("Критичных ошибок, начинающихся с 'E', не обнаружено.")
+            print("Критичных ошибок, связанных с PEP или в директории '.venv', не обнаружено.")
 
     except subprocess.CalledProcessError as e:
         print(f"Возникла ошибка при выполнении flake8: {e}")
@@ -203,6 +205,7 @@ from telebot.async_telebot import AsyncTeleBot
 from bot.handlers import setup_bot
 from database.db_handler import init_db
 from config import BOT_TOKEN
+from bot.scheduler import start_scheduler
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s', handlers=[logging.StreamHandler()])
@@ -212,15 +215,12 @@ async def main():
 
     while True:
         try:
-            # Инициализация базы данных
             logging.info("Инициализация базы данных.")
             init_db()
 
-            # Настройка и запуск бота
             await setup_bot(bot)
             logging.info("Бот настроен и готов к запуску.")
 
-            # Запуск бота
             await bot.infinity_polling()
         except Exception as e:
             logging.error(f"Произошла ошибка: {e}")
@@ -242,8 +242,7 @@ from bot.scheduler import start_scheduler
 import logging
 
 async def setup_bot(bot):
-    logging.info("Настройка команд для бота")
-
+    logging.info("Настройка команд для бота началась")
     main_menu_markup = get_main_menu_markup()
 
     bot.message_handler(commands=['start'])(lambda message: asyncio.create_task(start_bot(message, bot)))
@@ -257,23 +256,9 @@ async def setup_bot(bot):
     bot.message_handler(commands=['help'])(lambda message: asyncio.create_task(send_help(message, bot)))
     bot.message_handler(commands=['logs'])(lambda message: asyncio.create_task(send_logs(message, bot)))
     bot.message_handler(commands=['delete_logs'])(lambda message: asyncio.create_task(delete_logs(message, bot)))
-    bot.message_handler(commands=['check'])(lambda message: asyncio.create_task(check_command(message, bot)))  # Добавляем команду /check
+    bot.message_handler(commands=['check'])(lambda message: asyncio.create_task(check_command(message, bot)))  # Регистрация команды /check
 
     logging.info("Команда /check зарегистрирована")
-
-    # Обработчик команды /start
-    @bot.message_handler(commands=['start'])
-    async def start_command(message):
-        chat_id = message.chat.id
-        await bot.send_message(chat_id, "Планировщик запущен с интервалом 60 секунд.")
-        await start_scheduler(60, bot, chat_id)
-
-    bot.message_handler(func=lambda message: message.text == "📊 Показать сигналы")(lambda message: asyncio.create_task(show_signals_button(message, bot)))
-    bot.message_handler(func=lambda message: message.text == "🔢 Количество сигналов")(lambda message: asyncio.create_task(count_signals_button(message, bot)))
-    bot.message_handler(func=lambda message: message.text == "▶️ Старт")(lambda message: asyncio.create_task(start_bot_button(message, bot)))
-    bot.message_handler(func=lambda message: message.text == "⏹ Стоп")(lambda message: asyncio.create_task(stop_bot_button(message, bot)))
-    bot.message_handler(func=lambda message: message.text == "Актуальная отправка")(lambda message: asyncio.create_task(actual_send_button(message, bot)))
-    bot.message_handler(func=lambda message: message.text == "❓ Помощь")(lambda message: asyncio.create_task(help_button(message, bot)))
 
     @bot.message_handler(func=lambda message: True)
     async def send_welcome(message):
@@ -430,6 +415,7 @@ from .commands import (
     send_logs,
     delete_logs,
     send_pending_signals,
+    check_command  # Убедитесь, что эта строка присутствует
 )
 from .commands.menu_handlers import (
     get_main_menu_markup,
@@ -439,8 +425,6 @@ from .commands.menu_handlers import (
     stop_bot_button,
     help_button
 )
-
-from .commands.check import check_command
 
 async def setup_bot(bot):
     bot.message_handler(commands=['start'])(
@@ -655,13 +639,14 @@ Code:
 from telebot.async_telebot import AsyncTeleBot
 from utils.logger import general_logger
 from bot.scheduler import process_signals_func
+import logging
 
 async def check_command(message, bot: AsyncTeleBot):
+    logging.info("Команда /check вызвана")
     general_logger.info("Запущена команда /check")
     chat_id = message.chat.id
     await bot.send_message(chat_id, "Начинаю внеплановую проверку сигналов...")
 
-    # Запускаем процесс проверки сигналов
     await process_signals_func(bot)
 
     await bot.send_message(chat_id, "Внеплановая проверка сигналов завершена.")
@@ -748,6 +733,7 @@ from .help import send_help
 from .logs import send_logs
 from .delete_logs import delete_logs
 from .start import start_bot
+from .check import check_command  # Убедитесь, что эта строка присутствует
 from .menu_handlers import get_main_menu_markup, show_signals_button, count_signals_button, start_bot_button, stop_bot_button, help_button
 from .scheduler_command import start_scheduler_command
 
@@ -757,7 +743,7 @@ __all__ = [
     'change_interval', 'send_help', 'send_logs', 'delete_logs',
     'get_main_menu_markup', 'show_signals_button', 'count_signals_button',
     'start_bot_button', 'stop_bot_button', 'help_button', 'send_pending_signals',
-    'start_scheduler_command'
+    'start_scheduler_command', 'check_command'  # Добавьте сюда check_command
 ]
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/actual_send.py
@@ -1190,6 +1176,7 @@ import sqlite3
 from config import DB_NAME
 from utils.logger import general_logger
 from typing import Any
+from sqlalchemy.orm import Session
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)
@@ -1236,34 +1223,18 @@ def delete_all_tables():
     conn.commit()
     conn.close()
 
-def insert_signal(name, trend, date_start, price_start, accuracy):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
+def insert_signal(pair, trend_signal, session: Session):
+    signal = Signal(name=pair, trend=trend_signal)
+    session.add(signal)
+    session.commit()
 
-    c.execute('''SELECT * FROM signals 
-                 WHERE name = ? AND date_end IS NULL''', (name,))
-    existing_signal = c.fetchone()
-
-    if not existing_signal:
-        accuracy = max(1, min(100, int(accuracy)))
-        c.execute('''INSERT INTO signals 
-                     (name, trend, date_start, date_last, accuracy, price_start, price_last, count_sends)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                  (name, trend, date_start, date_start, accuracy, price_start, price_start, 0))
-
-    conn.commit()
-    conn.close()
-
-def update_signal(name, date_last, price_last, accuracy):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    accuracy = max(1, min(100, int(accuracy)))
-    c.execute('''UPDATE signals
-                 SET date_last = ?, price_last = ?, accuracy = ?
-                 WHERE name = ? AND date_end IS NULL''',
-              (date_last, price_last, accuracy, name))
-    conn.commit()
-    conn.close()
+def update_signal(pair, current_time, current_price, accuracy, session: Session):
+    signal = session.query(Signal).filter_by(name=pair, active=True).first()
+    if signal:
+        signal.price_end = current_price
+        signal.time_end = current_time
+        signal.accuracy = accuracy
+        session.commit()
 
 def increment_count_sends(signal_id: Any) -> bool:
     """
@@ -1303,15 +1274,9 @@ def get_closed_signals():
     conn.close()
     return signals
 
-def close_signal(name, date_end, price_end):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute('''UPDATE signals
-                 SET date_end = ?, price_end = ?
-                 WHERE name = ? AND date_end IS NULL''',
-              (date_end, price_end, name))
-    conn.commit()
-    conn.close()
+def close_signal(signal, session: Session):
+    signal.active = False
+    session.commit()
 
 def mark_signal_as_reported(signal_id):
     conn = sqlite3.connect(DB_NAME)
@@ -1353,16 +1318,8 @@ def fetch_all_signals():
     conn.close()
     return signals
 
-def get_active_signal(name):
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute('''SELECT id, name, trend, date_start, date_last, accuracy, date_end, 
-                 price_start, price_last, price_end, count_sends, reported 
-                 FROM signals 
-                 WHERE name = ? AND date_end IS NULL''', (name,))
-    signal_data = c.fetchone()
-    conn.close()
-    return Signal(*signal_data) if signal_data else None
+def get_active_signal(pair, session: Session):
+    return session.query(Signal).filter_by(name=pair, active=True).first()
 
 def store_signals_for_sending(new_signals, updated_signals, closed_signals):
     conn = sqlite3.connect(DB_NAME)
@@ -1459,18 +1416,16 @@ async def get_current_price(symbol):
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/signal_manager.py
 File Name: signal_manager.py
 Code:
-from database.db_handler import insert_signal, update_signal, close_signal, get_active_signals, \
-    get_active_signal
+from database.db_handler import insert_signal, update_signal, close_signal, get_active_signal
 from services.crypto_api import get_ohlcv, get_current_price
 from services.trend_analyzer import analyze_trend, is_trend_still_valid
 from utils.time_utils import get_current_time
-from database.models import Signal
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import logging
+from utils.logger import log_signal_processing
 
-# Assuming SQLAlchemy is used, initialize the sessionmaker
-engine = create_engine('sqlite:///path_to_your_db.sqlite')  # Replace with your actual database URL
+engine = create_engine('sqlite:///price_trend_db.sqlite')
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -1483,163 +1438,127 @@ async def check_and_create_signals(crypto_pairs):
     for pair in crypto_pairs:
         logging.info(f"Проверка пары: {pair}")
         ohlcv = await get_ohlcv(pair)
-        if ohlcv:
-            trend, accuracy = analyze_trend(ohlcv)
-            existing_signal = get_active_signal(pair)
-            current_price = await get_current_price(pair)
-            current_time = get_current_time()
 
-            if existing_signal:
-                if existing_signal.trend == trend:
-                    update_signal(pair, current_time, current_price, accuracy)
-                    updated_signals.append(existing_signal)
-                    logging.info(
-                        f"Обновлен существующий сигнал для пары {pair}: {trend} с точностью {accuracy}.")
-                else:
-                    close_signal(pair, current_time, current_price)
-                    closed_signals.append(existing_signal)
-                    insert_signal(pair, trend, current_time, current_price, accuracy)
-                    new_signal = get_active_signal(pair)
-                    new_signals.append(new_signal)
-                    logging.info(
-                        f"Закрыт старый сигнал и создан новый для пары {pair}: {trend} с точностью {accuracy}.")
+        trend_signal = analyze_trend(ohlcv)
+        log_signal_processing(f"Получен сигнал для пары {pair}: {trend_signal}")
+
+        active_signal = get_active_signal(pair, session)
+
+        if active_signal:
+            if trend_signal == "close":
+                close_signal(active_signal, session)
+                closed_signals.append(pair)
             else:
-                insert_signal(pair, trend, current_time, current_price, accuracy)
-                new_signal = get_active_signal(pair)
-                new_signals.append(new_signal)
-                logging.info(
-                    f"Создан новый сигнал для пары {pair}: {trend} с точностью {accuracy}.")
+                update_signal(pair, get_current_time(), get_current_price(pair), trend_signal, session)
+                updated_signals.append(pair)
         else:
-            logging.warning(f"Не удалось получить данные OHLCV для пары {pair}. Пропуск.")
+            if trend_signal != "neutral":
+                insert_signal(pair, trend_signal, session)
+                new_signals.append(pair)
 
     return new_signals, updated_signals, closed_signals
 
-
-def update_active_signals():
+async def update_active_signals():
     logging.info("Обновление активных сигналов.")
-    active_signals = get_active_signals()
+    active_signals = get_active_signal(session)
+
     for signal in active_signals:
         pair = signal.name
         logging.info(f"Актуализация сигнала для пары: {pair}")
-        ohlcv = get_ohlcv(pair)
+        ohlcv = await get_ohlcv(pair)
+
         if ohlcv:
             if is_trend_still_valid(ohlcv, signal.trend):
                 logging.info(f"Сигнал для пары {pair} всё ещё актуален.")
                 current_price = get_current_price(pair)
                 current_time = get_current_time()
-                _, accuracy = analyze_trend(ohlcv)
-                update_signal(pair, current_time, current_price, accuracy)
+                accuracy = analyze_trend(ohlcv)
+                update_signal(pair, current_time, current_price, accuracy, session)
             else:
                 logging.info(f"Сигнал для пары {pair} больше не актуален.")
                 current_price = get_current_price(pair)
                 current_time = get_current_time()
-                close_signal(pair, current_time, current_price)
-        else:
-            logging.warning(f"Не удалось получить данные OHLCV для пары {pair}. Пропуск.")
+                close_signal(signal, session)
 
+def process_signals(data):
+    log_signal_processing("Processing signals")
 
-async def update_signal_in_db(signal):
-    try:
-        existing_signal = session.query(Signal).get(signal.id)
-        if existing_signal:
-            existing_signal.trend = signal.trend
-            existing_signal.accuracy = signal.accuracy
-            existing_signal.close_value = signal.close_value
-            session.commit()
-        else:
-            logging.error(f"Сигнал с ID {signal.id} не найден в базе данных.")
-    except Exception as e:
-        logging.error(f"Ошибка при обновлении сигнала в базе данных: {e}")
+    trend_signal = analyze_trend(data)
+    log_signal_processing(f"Trend signal: {trend_signal}")
+
+    if trend_signal == "long":
+        log_signal_processing("Signal: Buy")
+    elif trend_signal == "short":
+        log_signal_processing("Signal: Sell")
+    else:
+        log_signal_processing("Signal: Hold")
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/trend_analyzer.py
 File Name: trend_analyzer.py
 Code:
+import logging
 import numpy as np
-from utils.logger import analyze_logger
+from .tinyml_analyzer import run_tinyml_model
+from utils.logger import log_analyze_step
 
-def analyze_trend(ohlcv_data):
-    analyze_logger.info("Начало анализа тренда")
-    if not ohlcv_data:
-        analyze_logger.warning("Нет данных для анализа")
-        return None, 0
+def analyze_trend(data):
+    log_analyze_step("Starting trend analysis")
 
-    closes = np.array([x[4] for x in ohlcv_data])
-    ma_short = np.mean(closes[-24:])  # 24-hour moving average
-    ma_long = np.mean(closes)  # Full period moving average
+    ma20 = data['close'].rolling(window=20).mean()
+    ma50 = data['close'].rolling(window=50).mean()
+    trend_signal = "neutral"
 
-    analyze_logger.info(f"Короткая MA: {ma_short}, Длинная MA: {ma_long}")
+    if ma20.iloc[-1] > ma50.iloc[-1]:
+        trend_signal = "long"
+    elif ma20.iloc[-1] < ma50.iloc[-1]:
+        trend_signal = "short"
 
-    if ma_short > ma_long:
-        trend = "long"
-    elif ma_short < ma_long:
-        trend = "short"
+    log_analyze_step(f"MA20: {ma20.iloc[-1]}, MA50: {ma50.iloc[-1]}, Initial trend signal: {trend_signal}")
+
+    tinyml_result = run_tinyml_model(data)
+    log_analyze_step(f"TinyML result: {tinyml_result}")
+
+    if tinyml_result == "long" and trend_signal == "short":
+        trend_signal = "neutral"
+    elif tinyml_result == "short" and trend_signal == "long":
+        trend_signal = "neutral"
     else:
-        trend = None
+        trend_signal = tinyml_result
 
-    # Расчет accuracy
-    diff = abs(ma_short - ma_long)
-    max_diff = max(closes) - min(closes)
-    accuracy = int((1 - diff / max_diff) * 100) if max_diff != 0 else 50
-    accuracy = max(1, min(100, accuracy))
+    log_analyze_step(f"Final trend signal after TinyML: {trend_signal}")
+    return trend_signal
 
-    analyze_logger.info(f"Определен тренд: {trend}, Точность: {accuracy}")
+def is_trend_still_valid(data, current_trend):
+    ma20 = data['close'].rolling(window=20).mean().iloc[-1]
+    ma50 = data['close'].rolling(window=50).mean().iloc[-1]
 
-    # Здесь можно добавить вызов TinyML анализа
-    # tinyml_result = analyze_with_tinyml(ohlcv_data)
-    # analyze_logger.info(f"Результат TinyML анализа: {tinyml_result}")
-
-    return trend, accuracy
-
-def is_trend_still_valid(ohlcv_data, current_trend):
-    new_trend, _ = analyze_trend(ohlcv_data)
-    return new_trend == current_trend
+    if current_trend == "long" and ma20 > ma50:
+        return True
+    elif current_trend == "short" and ma20 < ma50:
+        return True
+    else:
+        return False
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/tinyml_analyzer.py
 File Name: tinyml_analyzer.py
 Code:
-import tensorflow as tf
+import logging
+import numpy as np
+from utils.logger import log_tinyml_step
 
-# Загрузка модели TinyML
-model = tf.lite.Interpreter(model_path="path/to/your/tinyml_model.tflite")
-model.allocate_tensors()
+def run_tinyml_model(data):
+    log_tinyml_step("Running TinyML model")
 
-def analyze_with_tinyml(data):
-    input_details = model.get_input_details()
-    output_details = model.get_output_details()
+    # Пример простой модели анализа
+    mean_price = data['close'].mean()
+    log_tinyml_step(f"Mean price: {mean_price}")
 
-    model.set_tensor(input_details[0]['index'], data)
-    model.invoke()
-    output = model.get_tensor(output_details[0]['index'])
-
-    return output
-
-# Функции для интеграции TinyML в существующую логику анализа
-def should_open_signal(ohlcv_data):
-    # Подготовка данных для TinyML
-    prepared_data = prepare_data_for_tinyml(ohlcv_data)
-    result = analyze_with_tinyml(prepared_data)
-    # Интерпретация результата
-    return interpret_open_signal_result(result)
-
-def should_close_signal(ohlcv_data, current_trend):
-    # Подготовка данных для TinyML
-    prepared_data = prepare_data_for_tinyml(ohlcv_data, current_trend)
-    result = analyze_with_tinyml(prepared_data)
-    # Интерпретация результата
-    return interpret_close_signal_result(result)
-
-# Вспомогательные функции
-def prepare_data_for_tinyml(ohlcv_data, current_trend=None):
-    # Логика подготовки данных для модели TinyML
-    pass
-
-def interpret_open_signal_result(result):
-    # Логика интерпретации результата для открытия сигнала
-    pass
-
-def interpret_close_signal_result(result):
-    # Логика интерпретации результата для закрытия сигнала
-    pass
+    if mean_price > data['close'].iloc[-1]:
+        log_tinyml_step("TinyML model suggests: short")
+        return "short"
+    else:
+        log_tinyml_step("TinyML model suggests: long")
+        return "long"
 --------------------------------------------------------------------------------
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/__pycache__/crypto_api.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/__pycache__/trend_analyzer.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
@@ -1678,6 +1597,18 @@ Code:
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
+
+logging.basicConfig(filename='logs/analyze.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+def log_analyze_step(message):
+    logging.info(f"ANALYZE: {message}")
+
+def log_tinyml_step(message):
+    logging.info(f"TINYML: {message}")
+
+def log_signal_processing(message):
+    logging.info(f"SIGNAL PROCESSING: {message}")
 
 def setup_logging():
     log_dir = Path(__file__).parents[1] / 'logs'
@@ -1797,36 +1728,68 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
-from scipy.interpolate import make_interp_spline
 import io
 
 def find_nearest_index(df, target_time):
     nearest_idx = df.index.get_indexer([target_time], method='nearest')[0]
     return df.index[nearest_idx]
 
+def analyze_trend(df, trend):
+    if len(df) == 0:
+        return trend
+
+    ma20 = df['MA20'].iloc[-1] if 'MA20' in df.columns and not df['MA20'].isnull().all() else np.nan
+    ma50 = df['MA50'].iloc[-1] if 'MA50' in df.columns and not df['MA50'].isnull().all() else np.nan
+    ema20 = df['EMA20'].iloc[-1] if 'EMA20' in df.columns and not df['EMA20'].isnull().all() else np.nan
+    close = df['close'].iloc[-1] if 'close' in df.columns and not df['close'].isnull().all() else np.nan
+    bb_upper = df['BB_upper'].iloc[-1] if 'BB_upper' in df.columns and not df['BB_upper'].isnull().all() else np.nan
+    bb_lower = df['BB_lower'].iloc[-1] if 'BB_lower' in df.columns and not df['BB_lower'].isnull().all() else np.nan
+
+    trend_signal = None
+
+    if not np.isnan(close) and not np.isnan(ma20) and not np.isnan(ma50) and not np.isnan(ema20):
+        if close > ma20 and close > ma50 and close > ema20:
+            trend_signal = 'long'
+        elif close < ma20 and close < ma50 and close < ema20:
+            trend_signal = 'short'
+    if not np.isnan(close) and not np.isnan(bb_upper) and close > bb_upper:
+        trend_signal = 'overbought'
+    elif not np.isnan(close) and not np.isnan(bb_lower) and close < bb_lower:
+        trend_signal = 'oversold'
+
+    return trend_signal if trend_signal else trend
+
 def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=None):
     df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
     df.set_index('timestamp', inplace=True)
 
-    # Расчет плавной линии тренда
-    x = np.arange(len(df))
-    y = df['close'].values
+    if len(df) < 20:
+        raise ValueError("Insufficient data to compute indicators")
 
-    if len(x) > 3:  # Проверка, что достаточно точек для сглаживания
-        x_smooth = np.linspace(x.min(), x.max(), len(x))  # Делаем сглаживание с тем же количеством точек
-        spl = make_interp_spline(x, y, k=3)
-        y_smooth = spl(x_smooth)
-    else:
-        x_smooth = x
-        y_smooth = y
+    df['MA20'] = df['close'].rolling(window=20).mean()
+    df['MA50'] = df['close'].rolling(window=50).mean()
+    df['EMA20'] = df['close'].ewm(span=20, adjust=False).mean()
+    df['BB_upper'] = df['MA20'] + 2 * df['close'].rolling(window=20).std()
+    df['BB_lower'] = df['MA20'] - 2 * df['close'].rolling(window=20).std()
 
-    # Настройка стиля графика
+    trend = analyze_trend(df, trend)
+
     mc = mpf.make_marketcolors(up='g', down='r', inherit=True)
     s = mpf.make_mpf_style(marketcolors=mc)
 
-    # Подготовка дополнительных графиков
-    apds = [mpf.make_addplot(y_smooth, color='blue', width=1)]
+    apds = []
+
+    if 'MA20' in df.columns and not df['MA20'].isnull().all():
+        apds.append(mpf.make_addplot(df['MA20'], color='blue', width=1))
+    if 'MA50' in df.columns and not df['MA50'].isnull().all():
+        apds.append(mpf.make_addplot(df['MA50'], color='red', width=1))
+    if 'EMA20' in df.columns and not df['EMA20'].isnull().all():
+        apds.append(mpf.make_addplot(df['EMA20'], color='purple', width=1))
+    if 'BB_upper' in df.columns and not df['BB_upper'].isnull().all():
+        apds.append(mpf.make_addplot(df['BB_upper'], color='green', linestyle='--'))
+    if 'BB_lower' in df.columns and not df['BB_lower'].isnull().all():
+        apds.append(mpf.make_addplot(df['BB_lower'], color='green', linestyle='--'))
 
     if signal_start_date:
         signal_start = datetime.fromisoformat(signal_start_date)
@@ -1834,27 +1797,19 @@ def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=No
             signal_start = signal_start.replace(tzinfo=None)
         signal_start_index = df.index.get_indexer([signal_start], method='nearest')[0]
         signal_start_series = pd.Series([np.nan] * len(df), index=df.index)
-        signal_start_series.iloc[signal_start_index] = df['close'].iloc[signal_start_index]
-        apds.append(mpf.make_addplot(signal_start_series, type='scatter', markersize=100, marker='^', color='g' if trend.lower() == 'long' else 'r'))
+        if trend.lower() == 'long':
+            signal_start_series.iloc[signal_start_index] = df['high'].max() * 1.02
+            apds.append(mpf.make_addplot(signal_start_series, type='scatter', markersize=100, marker='^', color='g'))
+        elif trend.lower() == 'short':
+            signal_start_series.iloc[signal_start_index] = df['high'].max() * 1.02
+            apds.append(mpf.make_addplot(signal_start_series, type='scatter', markersize=100, marker='v', color='r'))
 
-    if signal_end_date:
-        signal_end = datetime.fromisoformat(signal_end_date)
-        if signal_end.tzinfo is not None:
-            signal_end = signal_end.replace(tzinfo=None)
-        signal_end_index = df.index.get_indexer([signal_end], method='nearest')[0]
-        signal_end_series = pd.Series([np.nan] * len(df), index=df.index)
-        signal_end_series.iloc[signal_end_index] = df['close'].iloc[signal_end_index]
-        apds.append(mpf.make_addplot(signal_end_series, type='scatter', markersize=100, marker='v', color='r'))
-
-    # Создание графика
     fig, axes = mpf.plot(df, type='candle', style=s, addplot=apds,
-                         title=f'Тренд: {trend.capitalize()}',
-                         ylabel='Цена',
+                         title=f'Trend: {trend.capitalize()}',
+                         ylabel='Price',
                          datetime_format='%Y-%m-%d %H:%M',
                          figsize=(12, 8),
                          returnfig=True)
-
-    axes[0].legend(['Линия тренда', 'Начало сигнала', 'Конец сигнала'])
 
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
