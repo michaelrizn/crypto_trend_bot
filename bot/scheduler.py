@@ -4,18 +4,18 @@ from apscheduler.triggers.interval import IntervalTrigger
 from services.signal_manager import check_and_create_signals
 from bot.handlers.commands.show_signals import send_pending_signals
 from database.db_handler import store_signals_for_sending
-from config import CRYPTO_PAIRS  # Импортируем список криптовалютных пар
+from config import CRYPTO_PAIRS
 
 scheduler = AsyncIOScheduler()
 job = None
 current_interval = None
-user_chat_id = None  # Глобальная переменная для хранения chat_id
+user_chat_id = None
 
 async def start_scheduler(check_interval, bot, chat_id):
     global job, current_interval, scheduler, user_chat_id
     logging.info("Инициализация и запуск планировщика.")
 
-    user_chat_id = chat_id  # Сохраняем chat_id пользователя
+    user_chat_id = chat_id
 
     if scheduler.running:
         scheduler.shutdown()
@@ -60,22 +60,19 @@ async def process_signals_func(bot):
     global user_chat_id
     logging.info("Начало выполнения периодической проверки сигналов.")
     try:
-        chat_id = user_chat_id  # Используем сохраненный chat_id
+        chat_id = user_chat_id
         if chat_id is None:
             logging.error("Chat ID пользователя не установлен.")
             return
 
-        # Вызов функции с передачей CRYPTO_PAIRS
         new_signals, updated_signals, closed_signals = await check_and_create_signals(CRYPTO_PAIRS)
 
         logging.info(
             f"Получено новых сигналов: {len(new_signals)}, обновленных: {len(updated_signals)}, закрытых: {len(closed_signals)}"
         )
 
-        # Сохраняем сигналы для отправки
         store_signals_for_sending(new_signals, updated_signals, closed_signals)
 
-        # Отправляем сохраненные сигналы
         await send_pending_signals(bot, chat_id)
 
         logging.info("Периодическая проверка сигналов завершена успешно.")

@@ -8,8 +8,6 @@ async def perform_check(chat_id, bot):
     try:
         new_signals, updated_signals, closed_signals = check_and_create_signals(CRYPTO_PAIRS)
 
-        # Здесь должна быть логика обработки и отправки сигналов
-        # Например:
         if new_signals:
             await bot.send_message(chat_id, f"Обнаружено {len(new_signals)} новых сигналов.")
         if closed_signals:

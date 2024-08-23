@@ -1,28 +1,32 @@
-import ccxt.async_support as ccxt
+import ccxt
 from config import EXCHANGE_API_KEY, EXCHANGE_SECRET
-from utils.logger import general_logger
+import numpy as np
 
 exchange = ccxt.binance({
     'apiKey': EXCHANGE_API_KEY,
-    'secret': EXCHANGE_SECRET,
+    'secret': EXCHANGE_SECRET
 })
 
-async def get_ohlcv(symbol, timeframe='1h', limit=48):
+async def get_ohlcv(pair):
     try:
-        ohlcv = await exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
-        await exchange.close()
-        return ohlcv
+        ohlcv = exchange.fetch_ohlcv(pair, timeframe='1h', limit=48)
+        ohlcv_array = np.array(ohlcv)
+        return {
+            'timestamp': ohlcv_array[:, 0],
+            'open': ohlcv_array[:, 1],
+            'high': ohlcv_array[:, 2],
+            'low': ohlcv_array[:, 3],
+            'close': ohlcv_array[:, 4],
+            'volume': ohlcv_array[:, 5]
+        }
     except Exception as e:
-        general_logger.error(f"Error fetching OHLCV data: {e}")
-        await exchange.close()
+        print(f"Ошибка при получении данных OHLCV для пары {pair}: {e}")
         return None
 
-async def get_current_price(symbol):
+async def get_current_price(pair):
     try:
-        ticker = await exchange.fetch_ticker(symbol)
-        await exchange.close()
-        return ticker['last']
+        ticker = exchange.fetch_ticker(pair)
+        return ticker['close']
     except Exception as e:
-        general_logger.error(f"Error fetching current price: {e}")
-        await exchange.close()
+        print(f"Ошибка при получении текущей цены для пары {pair}: {e}")
         return None

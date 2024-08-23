@@ -4,25 +4,31 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="85cb15fd-392a-4409-a5e6-9d206f4fa05d" name="Changes" comment="1.4">
-      <change afterPath="$PROJECT_DIR$/test_data.py" afterDir="false" />
+    <list default="true" id="85cb15fd-392a-4409-a5e6-9d206f4fa05d" name="Changes" comment="1.5">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/commands/actual_send.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/actual_send.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/commands/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/delete_logs.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/delete_logs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/commands/delete_tables.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/delete_tables.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/interval.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/interval.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/logs.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/logs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/commands/menu_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/menu_handlers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/scheduler_command.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/scheduler_command.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/commands/show_signals.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/show_signals.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/start.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/start.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/stop.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/stop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/periodic_tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/periodic_tasks.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/scheduler.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/scheduler.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/db_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/db_handler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logs/check_errors.txt" beforeDir="false" afterPath="$PROJECT_DIR$/logs/check_errors.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/analyze.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/analyze.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/general.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/general.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/project_tree_output.txt" beforeDir="false" afterPath="$PROJECT_DIR$/logs/project_tree_output.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/price_trend_db.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/price_trend_db.sqlite" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/crypto_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/crypto_api.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/signal_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/signal_manager.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/trend_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/trend_analyzer.py" afterDir="false" />
@@ -204,7 +210,15 @@
       <option name="project" value="LOCAL" />
       <updated>1724357693978</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="1.5">
+      <option name="closed" value="true" />
+      <created>1724403720458</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1724403720458</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -225,6 +239,7 @@
     <MESSAGE value="1.2" />
     <MESSAGE value="1.3" />
     <MESSAGE value="1.4" />
-    <option name="LAST_COMMIT_MESSAGE" value="1.4" />
+    <MESSAGE value="1.5" />
+    <option name="LAST_COMMIT_MESSAGE" value="1.5" />
   </component>
 </project>

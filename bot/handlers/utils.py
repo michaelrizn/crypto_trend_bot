@@ -15,27 +15,26 @@ bot = AsyncTeleBot(BOT_TOKEN)
 
 async def process_and_store_signals(new_signals, updated_signals, closed_signals):
     store_signals_for_sending(new_signals, updated_signals, closed_signals)
-    logging.info(f"Stored for sending: {len(new_signals)} new, {len(updated_signals)} updated, {len(closed_signals)} closed signals.")
+    logging.info(f"Сохранено для отправки: {len(new_signals)} новых, {len(updated_signals)} обновленных, {len(closed_signals)} закрытых сигналов.")
 
 
 async def send_signal_messages(chat_id, signals, format_message_func, is_new=False,
                                send_timestamp=True):
-    general_logger.info(f"Started sending messages for {len(signals)} signals.")
+    general_logger.info(f"Начата отправка сообщений для {len(signals)} сигналов.")
 
     if is_new and signals and send_timestamp:
-        current_time = datetime.now(timezone(TIMEZONE)).strftime("%Y-%m-%d %H:%M")
+        current_time = datetime.now(timezone(TIMEZONE)).strftime("%Y-%m-%d %H:%М")
         separator = "-" * 40
         header_message = f"{current_time}\n{separator}"
         try:
             await bot.send_message(chat_id, header_message)
-            general_logger.info(f"Sent message with timestamp and separator: {header_message}")
+            general_logger.info(f"Отправлено сообщение с отметкой времени и разделителем: {header_message}")
         except Exception as e:
-            general_logger.error(f"Error sending header: {e}")
+            general_logger.error(f"Ошибка при отправке заголовка: {e}")
             return
 
     for signal in signals:
         try:
-            # Определяем нужно ли передавать аргумент is_new в format_message_func
             if format_message_func.__name__ == "format_new_signal_message":
                 message_text = format_message_func(signal, is_new=is_new)
             else:
@@ -45,7 +44,7 @@ async def send_signal_messages(chat_id, signals, format_message_func, is_new=Fal
             chart_buffer = generate_chart(ohlcv_data, signal.trend, signal.date_start,
                                           signal.date_last)
             chart_bytes = chart_buffer.getvalue()
-            general_logger.info(f"Chart for {signal.name} generated successfully.")
+            general_logger.info(f"График для {signal.name} успешно создан.")
 
             for attempt in range(3):
                 try:
@@ -54,28 +53,27 @@ async def send_signal_messages(chat_id, signals, format_message_func, is_new=Fal
                         sent_message = await bot.send_photo(chat_id, chart_bytes,
                                                             caption=message_text)
                         general_logger.info(
-                            f"Message with chart sent successfully to chat {chat_id}: {sent_message.message_id}")
+                            f"Сообщение с графиком успешно отправлено в чат {chat_id}: {sent_message.message_id}")
                     else:
                         sent_message = await bot.send_message(chat_id, message_text)
                         general_logger.info(
-                            f"Text message sent to chat {chat_id}: {sent_message.message_id}")
+                            f"Текстовое сообщение отправлено в чат {chat_id}: {sent_message.message_id}")
 
-                    # Увеличиваем значение Count Sends после успешной отправки сообщения
                     success = increment_count_sends(signal.id)
                     if success:
                         general_logger.info(
-                            f"Successfully incremented count_sends for signal with ID {signal.id}")
+                            f"Успешно увеличено количество отправок для сигнала с ID {signal.id}")
                     else:
                         general_logger.warning(
-                            f"Failed to increment count_sends for signal with ID {signal.id}")
+                            f"Не удалось увеличить количество отправок для сигнала с ID {signal.id}")
                     break
                 except Exception as e:
                     general_logger.error(
-                        f"Error sending message for signal {signal.name} on attempt {attempt + 1}: {e}")
+                        f"Ошибка при отправке сообщения для сигнала {signal.name} на попытке {attempt + 1}: {e}")
                     if attempt < 2:
                         await asyncio.sleep(5)
                     else:
                         general_logger.error(
-                            f"Failed to send message for signal {signal.name} after 3 attempts.")
+                            f"Не удалось отправить сообщение для сигнала {signal.name} после 3 попыток.")
         except Exception as e:
-            general_logger.error(f"Error processing signal {signal.name}: {e}")
+            general_logger.error(f"Ошибка при обработке сигнала {signal.name}: {e}")

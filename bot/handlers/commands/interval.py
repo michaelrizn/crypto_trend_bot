@@ -5,7 +5,6 @@ async def change_interval(message, bot):
     command_parts = message.text.split()
 
     if len(command_parts) == 1:
-        # Если команда без аргументов, показываем текущий интервал
         current_interval = get_current_interval()
         if current_interval:
             await bot.send_message(message.chat.id,
@@ -14,15 +13,12 @@ async def change_interval(message, bot):
             await bot.send_message(message.chat.id, "Планировщик не запущен.")
     elif len(command_parts) == 2:
         try:
-            # Пытаемся преобразовать аргумент в минуты
             new_interval_minutes = int(command_parts[1])
             if new_interval_minutes <= 0:
                 raise ValueError("Интервал должен быть положительным числом.")
 
-            # Обновляем интервал (в секундах)
             new_interval_seconds = new_interval_minutes * 60
             if get_current_interval() is None:
-                # Если планировщик не был запущен, запускаем его
                 await start_scheduler(new_interval_seconds, CHANNEL_ID, bot)
             else:
                 update_scheduler_interval(new_interval_seconds)

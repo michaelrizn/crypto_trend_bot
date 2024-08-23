@@ -9,8 +9,13 @@ from .help import send_help
 from .logs import send_logs
 from .delete_logs import delete_logs
 from .start import start_bot
-from .check import check_command  # Убедитесь, что эта строка присутствует
-from .menu_handlers import get_main_menu_markup, show_signals_button, count_signals_button, start_bot_button, stop_bot_button, help_button
+from .check import check_command
+from .menu_handlers import (
+    get_main_menu_markup, show_signals_button, count_signals_button,
+    start_bot_button, stop_bot_button, help_button, actual_send_button,
+    delete_tables_button, table_signals_button, change_interval_button,
+    check_command_button, send_logs_button, delete_logs_button
+)
 from .scheduler_command import start_scheduler_command
 
 __all__ = [
@@ -18,6 +23,8 @@ __all__ = [
     'delete_tables', 'table_signals', 'toggle_actual_send',
     'change_interval', 'send_help', 'send_logs', 'delete_logs',
     'get_main_menu_markup', 'show_signals_button', 'count_signals_button',
-    'start_bot_button', 'stop_bot_button', 'help_button', 'send_pending_signals',
-    'start_scheduler_command', 'check_command'  # Добавьте сюда check_command
+    'start_bot_button', 'stop_bot_button', 'help_button', 'actual_send_button',
+    'delete_tables_button', 'table_signals_button', 'change_interval_button',
+    'check_command_button', 'send_logs_button', 'delete_logs_button',
+    'send_pending_signals', 'start_scheduler_command', 'check_command'
 ]

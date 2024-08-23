@@ -13,14 +13,11 @@ async def delete_logs(message, bot: AsyncTeleBot):
                 os.remove(os.path.join(log_dir, file))
                 deleted_files += 1
 
-        # Создаем новые пустые файлы логов
         open(log_dir / 'general.log', 'w').close()
         open(log_dir / 'analyze.log', 'w').close()
 
-        # Переинициализируем логгеры
         new_general_logger, new_analyze_logger = setup_logging()
 
-        # Обновляем глобальные переменные в модуле utils.logger
         import utils.logger
         utils.logger.general_logger = new_general_logger
         utils.logger.analyze_logger = new_analyze_logger

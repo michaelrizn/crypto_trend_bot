@@ -23,6 +23,12 @@ def init_db():
                   reported INTEGER DEFAULT 0,
                   forecast TEXT DEFAULT 'unknown')''')
 
+    c.execute('''CREATE TABLE IF NOT EXISTS signals_to_send
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  signal_id INTEGER,
+                  signal_type TEXT,
+                  sent INTEGER DEFAULT 0)''')
+
     conn.commit()
     conn.close()
 
@@ -37,7 +43,7 @@ def delete_all_tables():
     conn.commit()
     conn.close()
 
-    general_logger.info("All tables have been deleted.")
+    general_logger.info("Все таблицы удалены.")
 
 def update_db_structure():
     conn = sqlite3.connect(DB_NAME)
@@ -48,7 +54,7 @@ def update_db_structure():
 
     if 'forecast' not in columns:
         c.execute("ALTER TABLE signals ADD COLUMN forecast TEXT DEFAULT 'unknown'")
-        general_logger.info("Added 'forecast' column to signals table")
+        general_logger.info("Добавлена колонка 'forecast' в таблицу signals")
 
     conn.commit()
     conn.close()
@@ -92,7 +98,7 @@ def increment_count_sends(signal_id: Any) -> bool:
     rows_affected = c.rowcount
     conn.close()
     general_logger.info(
-        f"Incremented count_sends for signal with ID {signal_id}. Rows affected: {rows_affected}")
+        f"Увеличено количество отправок для сигнала с ID {signal_id}. Затронуто строк: {rows_affected}")
     return rows_affected > 0
 
 def get_active_signals():
@@ -169,7 +175,7 @@ def fetch_all_signals():
 
 def get_active_signal(name):
     conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
+    c = conn.cursor()  # Инициализация курсора
     c.execute('''SELECT id, name, trend, date_start, date_last, accuracy, date_end, 
                  price_start, price_last, price_end, count_sends, reported, forecast
                  FROM signals 
@@ -222,7 +228,7 @@ def mark_signal_as_sent(signal_id):
                  WHERE signal_id = ?''', (signal_id,))
     conn.commit()
     conn.close()
-    general_logger.info(f"Signal with ID {signal_id} marked as sent")
+    general_logger.info(f"Сигнал с ID {signal_id} отмечен как отправленный")
 
 def get_signal_by_id(signal_id):
     conn = sqlite3.connect(DB_NAME)

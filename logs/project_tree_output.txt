@@ -84,7 +84,7 @@ Project Tree Structure:
 
 ================================================================================
 
-Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/.DS_Store: 'utf-8' codec can't decode byte 0xf4 in position 661: invalid continuation byte
+Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/.DS_Store: 'utf-8' codec can't decode byte 0xf4 in position 325: invalid continuation byte
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/config.py
 File Name: config.py
 Code:
@@ -236,26 +236,25 @@ Code:
 import logging
 import asyncio
 from telebot.async_telebot import AsyncTeleBot
-from bot.handlers import setup_bot
+from bot import setup_bot  # Корректный импорт setup_bot
 from database.db_handler import init_db
 from config import BOT_TOKEN
 from bot.scheduler import start_scheduler
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s', handlers=[logging.StreamHandler()])
 
 async def main():
-    bot = AsyncTeleBot(BOT_TOKEN)  # Инициализация бота
+    bot = AsyncTeleBot(BOT_TOKEN)
 
     while True:
         try:
             logging.info("Инициализация базы данных.")
             init_db()
 
-            await setup_bot(bot)
+            await setup_bot(bot)  # Вызов setup_bot для настройки бота
             logging.info("Бот настроен и готов к запуску.")
 
-            await bot.infinity_polling()
+            await bot.infinity_polling()  # Запуск бота
         except Exception as e:
             logging.error(f"Произошла ошибка: {e}")
             logging.info("Перезапуск бота через 5 секунд...")
@@ -264,26 +263,33 @@ async def main():
 if __name__ == "__main__":
     logging.info("Запуск приложения.")
     asyncio.run(main())
-
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/__init__.py
 File Name: __init__.py
 Code:
 import asyncio
 from bot.handlers.commands import (
-    start_bot, stop_bot, show_signals, count_signals, delete_tables,
-    table_signals, toggle_actual_send, change_interval, send_help, send_logs, delete_logs
+    start_bot, start_scheduler_command, stop_bot, show_signals,
+    count_signals, delete_tables, table_signals, toggle_actual_send,
+    change_interval, send_help, send_logs, delete_logs, send_pending_signals
 )
-from bot.handlers.commands.menu_handlers import get_main_menu_markup
+from bot.handlers.commands.menu_handlers import (
+    get_main_menu_markup, show_signals_button, count_signals_button,
+    start_bot_button, stop_bot_button, help_button,
+    delete_tables_button, table_signals_button,
+    change_interval_button, check_command_button,
+    send_logs_button, delete_logs_button
+)
 from bot.handlers.commands.check import check_command
-from bot.scheduler import start_scheduler
 import logging
 
 async def setup_bot(bot):
     logging.info("Настройка команд для бота началась")
     main_menu_markup = get_main_menu_markup()
 
+    # Регистрация текстовых команд
     bot.message_handler(commands=['start'])(lambda message: asyncio.create_task(start_bot(message, bot)))
+    bot.message_handler(commands=['scheduler_start'])(lambda message: asyncio.create_task(start_scheduler_command(message, bot)))
     bot.message_handler(commands=['stop'])(lambda message: asyncio.create_task(stop_bot(message, bot)))
     bot.message_handler(commands=['show'])(lambda message: asyncio.create_task(show_signals(message, bot)))
     bot.message_handler(commands=['count'])(lambda message: asyncio.create_task(count_signals(message, bot)))
@@ -295,9 +301,22 @@ async def setup_bot(bot):
     bot.message_handler(commands=['logs'])(lambda message: asyncio.create_task(send_logs(message, bot)))
     bot.message_handler(commands=['delete_logs'])(lambda message: asyncio.create_task(delete_logs(message, bot)))
     bot.message_handler(commands=['check'])(lambda message: asyncio.create_task(check_command(message, bot)))
+    bot.message_handler(commands=['send_signals'])(lambda message: asyncio.create_task(send_pending_signals(message, bot)))
 
-    logging.info("Команда /check зарегистрирована")
+    # Регистрация кнопок меню
+    bot.message_handler(func=lambda message: message.text == "📊 Показать сигналы")(lambda message: show_signals_button(message, bot))
+    bot.message_handler(func=lambda message: message.text == "🔢 Количество сигналов")(lambda message: count_signals_button(message, bot))
+    bot.message_handler(func=lambda message: message.text == "▶️ Старт")(lambda message: start_bot_button(message, bot))
+    bot.message_handler(func=lambda message: message.text == "⏹ Стоп")(lambda message: stop_bot_button(message, bot))
+    bot.message_handler(func=lambda message: message.text == "❓ Помощь")(lambda message: help_button(message, bot))
+    bot.message_handler(func=lambda message: message.text == "🗑 Удалить таблицы")(lambda message: delete_tables_button(message, bot))
+    bot.message_handler(func=lambda message: message.text == "📋 Таблица сигналов")(lambda message: table_signals_button(message, bot))
+    bot.message_handler(func=lambda message: message.text == "⏱ Изменить интервал")(lambda message: change_interval_button(message, bot))
+    bot.message_handler(func=lambda message: message.text == "🔍 Проверить сейчас")(lambda message: check_command_button(message, bot))
+    bot.message_handler(func=lambda message: message.text == "📁 Показать логи")(lambda message: send_logs_button(message, bot))
+    bot.message_handler(func=lambda message: message.text == "🗑 Удалить логи")(lambda message: delete_logs_button(message, bot))
 
+    # Обработчик по умолчанию для сообщений без команд
     @bot.message_handler(func=lambda message: True)
     async def send_welcome(message):
         await bot.reply_to(message, "Выберите команду:", reply_markup=main_menu_markup)
@@ -313,18 +332,18 @@ from apscheduler.triggers.interval import IntervalTrigger
 from services.signal_manager import check_and_create_signals
 from bot.handlers.commands.show_signals import send_pending_signals
 from database.db_handler import store_signals_for_sending
-from config import CRYPTO_PAIRS  # Импортируем список криптовалютных пар
+from config import CRYPTO_PAIRS
 
 scheduler = AsyncIOScheduler()
 job = None
 current_interval = None
-user_chat_id = None  # Глобальная переменная для хранения chat_id
+user_chat_id = None
 
 async def start_scheduler(check_interval, bot, chat_id):
     global job, current_interval, scheduler, user_chat_id
     logging.info("Инициализация и запуск планировщика.")
 
-    user_chat_id = chat_id  # Сохраняем chat_id пользователя
+    user_chat_id = chat_id
 
     if scheduler.running:
         scheduler.shutdown()
@@ -369,22 +388,19 @@ async def process_signals_func(bot):
     global user_chat_id
     logging.info("Начало выполнения периодической проверки сигналов.")
     try:
-        chat_id = user_chat_id  # Используем сохраненный chat_id
+        chat_id = user_chat_id
         if chat_id is None:
             logging.error("Chat ID пользователя не установлен.")
             return
 
-        # Вызов функции с передачей CRYPTO_PAIRS
         new_signals, updated_signals, closed_signals = await check_and_create_signals(CRYPTO_PAIRS)
 
         logging.info(
             f"Получено новых сигналов: {len(new_signals)}, обновленных: {len(updated_signals)}, закрытых: {len(closed_signals)}"
         )
 
-        # Сохраняем сигналы для отправки
         store_signals_for_sending(new_signals, updated_signals, closed_signals)
 
-        # Отправляем сохраненные сигналы
         await send_pending_signals(bot, chat_id)
 
         logging.info("Периодическая проверка сигналов завершена успешно.")
@@ -439,74 +455,7 @@ async def count_signals(message):
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/__init__.py
 File Name: __init__.py
 Code:
-from .commands import (
-    start_bot, start_scheduler_command, stop_bot, show_signals,
-    count_signals, delete_tables, table_signals, toggle_actual_send,
-    change_interval, send_help, send_logs, delete_logs, send_pending_signals
-)
-from .commands.menu_handlers import (
-    get_main_menu_markup, show_signals_button, count_signals_button,
-    start_bot_button, stop_bot_button, help_button
-)
 
-async def setup_bot(bot):
-    bot.message_handler(commands=['start'])(
-        lambda message: start_bot(message, bot)
-    )
-    bot.message_handler(commands=['scheduler_start'])(
-        lambda message: start_scheduler_command(message, bot)
-    )
-    bot.message_handler(commands=['stop'])(
-        lambda message: stop_bot(message, bot)
-    )
-    bot.message_handler(commands=['show'])(
-        lambda message: show_signals(message, bot)
-    )
-    bot.message_handler(commands=['count'])(
-        lambda message: count_signals(message, bot)
-    )
-    bot.message_handler(commands=['delete_tables'])(
-        lambda message: delete_tables(message, bot)
-    )
-    bot.message_handler(commands=['table_signals'])(
-        lambda message: table_signals(message, bot)
-    )
-    bot.message_handler(commands=['actual_send'])(
-        lambda message: toggle_actual_send(message, bot)
-    )
-    bot.message_handler(commands=['interval'])(
-        lambda message: change_interval(message, bot)
-    )
-    bot.message_handler(commands=['help'])(
-        lambda message: send_help(message, bot)
-    )
-    bot.message_handler(commands=['logs'])(
-        lambda message: send_logs(message, bot)
-    )
-    bot.message_handler(commands=['delete_logs'])(
-        lambda message: delete_logs(message, bot)
-    )
-    bot.message_handler(commands=['send_signals'])(
-        lambda message: send_pending_signals(message, bot)
-    )
-
-    bot.message_handler(func=lambda message: message.text == "📊 Показать сигналы")(
-        lambda message: show_signals_button(message, bot)
-    )
-    bot.message_handler(func=lambda message: message.text == "🔢 Количество сигналов")(
-        lambda message: count_signals_button(message, bot)
-    )
-    bot.message_handler(func=lambda message: message.text == "▶️ Старт")(
-        lambda message: start_bot_button(message, bot)
-    )
-    bot.message_handler(func=lambda message: message.text == "⏹ Стоп")(
-        lambda message: stop_bot_button(message, bot)
-    )
-    bot.message_handler(func=lambda message: message.text == "❓ Помощь")(
-        lambda message: help_button(message, bot)
-    )
-
-    return bot
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/utils.py
 File Name: utils.py
@@ -528,49 +477,68 @@ bot = AsyncTeleBot(BOT_TOKEN)
 
 async def process_and_store_signals(new_signals, updated_signals, closed_signals):
     store_signals_for_sending(new_signals, updated_signals, closed_signals)
-    logging.info(f"Stored for sending: {len(new_signals)} new, {len(updated_signals)} updated, {len(closed_signals)} closed signals.")
+    logging.info(f"Сохранено для отправки: {len(new_signals)} новых, {len(updated_signals)} обновленных, {len(closed_signals)} закрытых сигналов.")
 
-async def send_signal_messages(chat_id, signals, format_message_func, is_new=False, send_timestamp=True):
-    general_logger.info(f"Started sending messages for {len(signals)} signals.")
 
-    if signals and send_timestamp:
-        current_time = datetime.now(timezone(TIMEZONE)).strftime("%Y-%m-%d %H:%M")
+async def send_signal_messages(chat_id, signals, format_message_func, is_new=False,
+                               send_timestamp=True):
+    general_logger.info(f"Начата отправка сообщений для {len(signals)} сигналов.")
+
+    if is_new and signals and send_timestamp:
+        current_time = datetime.now(timezone(TIMEZONE)).strftime("%Y-%m-%d %H:%М")
         separator = "-" * 40
         header_message = f"{current_time}\n{separator}"
         try:
             await bot.send_message(chat_id, header_message)
-            general_logger.info(f"Sent message with timestamp and separator: {header_message}")
+            general_logger.info(f"Отправлено сообщение с отметкой времени и разделителем: {header_message}")
         except Exception as e:
-            general_logger.error(f"Error sending header: {e}")
+            general_logger.error(f"Ошибка при отправке заголовка: {e}")
             return
 
     for signal in signals:
         try:
-            message_text = format_message_func(signal, is_new=is_new)
+            if format_message_func.__name__ == "format_new_signal_message":
+                message_text = format_message_func(signal, is_new=is_new)
+            else:
+                message_text = format_message_func(signal)
 
             ohlcv_data = await get_ohlcv(signal.name)
-            chart_buffer = generate_chart(ohlcv_data, signal.trend, signal.date_start, signal.date_last)
+            chart_buffer = generate_chart(ohlcv_data, signal.trend, signal.date_start,
+                                          signal.date_last)
             chart_bytes = chart_buffer.getvalue()
-            general_logger.info(f"Chart for {signal.name} generated successfully.")
+            general_logger.info(f"График для {signal.name} успешно создан.")
 
             for attempt in range(3):
                 try:
                     await asyncio.sleep(1)
                     if chart_bytes:
-                        sent_message = await bot.send_photo(chat_id, chart_bytes, caption=message_text)
-                        general_logger.info(f"Message with chart sent successfully to chat {chat_id}: {sent_message.message_id}")
+                        sent_message = await bot.send_photo(chat_id, chart_bytes,
+                                                            caption=message_text)
+                        general_logger.info(
+                            f"Сообщение с графиком успешно отправлено в чат {chat_id}: {sent_message.message_id}")
                     else:
                         sent_message = await bot.send_message(chat_id, message_text)
-                        general_logger.info(f"Text message sent to chat {chat_id}: {sent_message.message_id}")
+                        general_logger.info(
+                            f"Текстовое сообщение отправлено в чат {chat_id}: {sent_message.message_id}")
+
+                    success = increment_count_sends(signal.id)
+                    if success:
+                        general_logger.info(
+                            f"Успешно увеличено количество отправок для сигнала с ID {signal.id}")
+                    else:
+                        general_logger.warning(
+                            f"Не удалось увеличить количество отправок для сигнала с ID {signal.id}")
                     break
                 except Exception as e:
-                    general_logger.error(f"Error sending message for signal {signal.name} on attempt {attempt + 1}: {e}")
+                    general_logger.error(
+                        f"Ошибка при отправке сообщения для сигнала {signal.name} на попытке {attempt + 1}: {e}")
                     if attempt < 2:
                         await asyncio.sleep(5)
                     else:
-                        general_logger.error(f"Failed to send message for signal {signal.name} after 3 attempts.")
+                        general_logger.error(
+                            f"Не удалось отправить сообщение для сигнала {signal.name} после 3 попыток.")
         except Exception as e:
-            general_logger.error(f"Error processing signal {signal.name}: {e}")
+            general_logger.error(f"Ошибка при обработке сигнала {signal.name}: {e}")
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/periodic_tasks.py
 File Name: periodic_tasks.py
@@ -585,8 +553,6 @@ async def perform_check(chat_id, bot):
     try:
         new_signals, updated_signals, closed_signals = check_and_create_signals(CRYPTO_PAIRS)
 
-        # Здесь должна быть логика обработки и отправки сигналов
-        # Например:
         if new_signals:
             await bot.send_message(chat_id, f"Обнаружено {len(new_signals)} новых сигналов.")
         if closed_signals:
@@ -617,14 +583,11 @@ async def delete_logs(message, bot: AsyncTeleBot):
                 os.remove(os.path.join(log_dir, file))
                 deleted_files += 1
 
-        # Создаем новые пустые файлы логов
         open(log_dir / 'general.log', 'w').close()
         open(log_dir / 'analyze.log', 'w').close()
 
-        # Переинициализируем логгеры
         new_general_logger, new_analyze_logger = setup_logging()
 
-        # Обновляем глобальные переменные в модуле utils.logger
         import utils.logger
         utils.logger.general_logger = new_general_logger
         utils.logger.analyze_logger = new_analyze_logger
@@ -662,26 +625,22 @@ Code:
 from telebot.async_telebot import AsyncTeleBot
 from utils.logger import general_logger
 from services.signal_manager import check_and_create_signals
-from config import CRYPTO_PAIRS
-from bot.handlers.commands.show_signals import send_pending_signals
-import logging
-
+from bot.handlers.commands.show_signals import show_signals  # Импорт функции show_signals
+from config import CRYPTO_PAIRS  # Импорт списка криптовалютных пар из config.py
 
 async def check_command(message, bot: AsyncTeleBot):
-    logging.info("Команда /check вызвана")
-    general_logger.info("Запущена команда /check")
-    chat_id = message.chat.id
-    await bot.send_message(chat_id, "Начинаю внеплановую проверку сигналов...")
+    general_logger.info("Команда /check вызвана")
+    await bot.reply_to(message, "Начинаю внеплановую проверку сигналов...")
 
-    new_signals, updated_signals, closed_signals = await check_and_create_signals(CRYPTO_PAIRS)
+    # Передаем CRYPTO_PAIRS в функцию check_and_create_signals
+    await check_and_create_signals(CRYPTO_PAIRS)
 
-    general_logger.info(
-        f"Новых сигналов: {len(new_signals)}, обновленных: {len(updated_signals)}, закрытых: {len(closed_signals)}")
+    general_logger.info("Внеплановая проверка сигналов завершена.")
+    await bot.reply_to(message, "Внеплановая проверка сигналов завершена.")
 
-    await send_pending_signals(bot, chat_id)
-
-    await bot.send_message(chat_id, "Внеплановая проверка сигналов завершена.")
-    general_logger.info("Внеплановая проверка сигналов завершена")
+    # Вызов функции show_signals после завершения проверки
+    await show_signals(message, bot)
+    general_logger.info("Автоматическая отправка сигналов после проверки завершена.")
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/interval.py
 File Name: interval.py
@@ -693,7 +652,6 @@ async def change_interval(message, bot):
     command_parts = message.text.split()
 
     if len(command_parts) == 1:
-        # Если команда без аргументов, показываем текущий интервал
         current_interval = get_current_interval()
         if current_interval:
             await bot.send_message(message.chat.id,
@@ -702,15 +660,12 @@ async def change_interval(message, bot):
             await bot.send_message(message.chat.id, "Планировщик не запущен.")
     elif len(command_parts) == 2:
         try:
-            # Пытаемся преобразовать аргумент в минуты
             new_interval_minutes = int(command_parts[1])
             if new_interval_minutes <= 0:
                 raise ValueError("Интервал должен быть положительным числом.")
 
-            # Обновляем интервал (в секундах)
             new_interval_seconds = new_interval_minutes * 60
             if get_current_interval() is None:
-                # Если планировщик не был запущен, запускаем его
                 await start_scheduler(new_interval_seconds, CHANNEL_ID, bot)
             else:
                 update_scheduler_interval(new_interval_seconds)
@@ -741,7 +696,7 @@ async def stop_bot(message, bot: AsyncTeleBot):
         except asyncio.CancelledError:
             pass
         check_task = None
-        stop_scheduler()  # Останавливаем планировщик
+        stop_scheduler()
         general_logger.info("Бот остановлен. Периодические проверки деактивированы.")
         response = "Бот остановлен. Периодические проверки деактивированы."
         await bot.reply_to(message, response)
@@ -764,7 +719,7 @@ from .help import send_help
 from .logs import send_logs
 from .delete_logs import delete_logs
 from .start import start_bot
-from .check import check_command  # Убедитесь, что эта строка присутствует
+from .check import check_command
 from .menu_handlers import get_main_menu_markup, show_signals_button, count_signals_button, start_bot_button, stop_bot_button, help_button
 from .scheduler_command import start_scheduler_command
 
@@ -774,7 +729,7 @@ __all__ = [
     'change_interval', 'send_help', 'send_logs', 'delete_logs',
     'get_main_menu_markup', 'show_signals_button', 'count_signals_button',
     'start_bot_button', 'stop_bot_button', 'help_button', 'send_pending_signals',
-    'start_scheduler_command', 'check_command'  # Добавьте сюда check_command
+    'start_scheduler_command', 'check_command'
 ]
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/actual_send.py
@@ -799,7 +754,7 @@ from config import CHECK_INTERVAL, CRYPTO_PAIRS
 from bot.scheduler import start_scheduler
 from database.db_handler import get_active_signals, get_closed_signals, mark_signal_as_reported
 from utils.message_formatter import format_new_signal_message, format_closed_signal_message
-from .menu_handlers import get_main_menu_markup  # Проверьте правильность пути и имени файла
+from .menu_handlers import get_main_menu_markup
 from bot.handlers.utils import send_signal_messages
 from services.signal_manager import check_and_create_signals
 
@@ -809,18 +764,16 @@ check_task = None
 
 async def start_bot(message, bot: AsyncTeleBot):
     global check_task
-    chat_id = message.chat.id  # Получаем chat_id пользователя из сообщения
+    chat_id = message.chat.id
 
     if check_task is None or check_task.done():
         general_logger.info("Бот запускается.")
         response = "Бот запущен и готов к работе. Выполняется начальный анализ..."
         await bot.reply_to(message, response, reply_markup=get_main_menu_markup())
 
-        # Выполнить начальный анализ и отправить сигналы
         check_task = asyncio.create_task(process_and_send_signals(bot, chat_id))
         await check_task
 
-        # Запустить планировщик с chat_id
         await start_scheduler(CHECK_INTERVAL, bot, chat_id)
 
         general_logger.info("Периодическая проверка сигналов запущена.")
@@ -833,10 +786,8 @@ async def start_bot(message, bot: AsyncTeleBot):
 async def process_and_send_signals(bot: AsyncTeleBot, chat_id):
     general_logger.info("Выполнение начального анализа и отправка сигналов.")
 
-    # Вызов функции для анализа сигналов
     new_signals, updated_signals, closed_signals = await check_and_create_signals(CRYPTO_PAIRS)
 
-    # Отправка активных сигналов
     if new_signals or updated_signals:
         await bot.send_message(
             chat_id,
@@ -848,7 +799,6 @@ async def process_and_send_signals(bot: AsyncTeleBot, chat_id):
             format_message_func=format_new_signal_message
         )
 
-    # Отправка закрытых сигналов
     if closed_signals:
         await bot.send_message(
             chat_id,
@@ -873,11 +823,11 @@ from database.db_handler import delete_all_tables, init_db
 from utils.logger import general_logger
 
 async def delete_tables(message, bot: AsyncTeleBot):
-    general_logger.info("Command /delete_tables initiated.")
+    general_logger.info("Команда /delete_tables инициирована.")
     delete_all_tables()
     init_db()
-    await bot.reply_to(message, "All tables have been deleted and recreated.")
-    general_logger.info("All tables deleted and recreated.")
+    await bot.reply_to(message, "Все таблицы удалены и созданы заново.")
+    general_logger.info("Все таблицы удалены и созданы заново.")
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/logs.py
 File Name: logs.py
@@ -887,21 +837,21 @@ from pathlib import Path
 from telebot.async_telebot import AsyncTeleBot
 from utils.logger import general_logger
 
-MAX_FILE_SIZE = 50 * 1024 * 1024  # Установите лимит на размер файла в 50 MB (или любой другой лимит)
+MAX_FILE_SIZE = 50 * 1024 * 1024
 
 async def send_logs(message, bot: AsyncTeleBot):
     general_logger.info("Запрос логов через команду /logs")
     log_dir = Path(__file__).parents[4] / 'crypto_trend_bot' / 'logs'
 
     try:
-        files = list(log_dir.iterdir())  # Получаем все файлы в директории
+        files = list(log_dir.iterdir())
         if not files:
             await bot.send_message(message.chat.id, "Нет доступных файлов для отправки.")
             general_logger.info("Нет доступных файлов для отправки.")
             return
 
         for log_file in files:
-            if log_file.is_file():  # Проверяем, что это файл, а не директория
+            if log_file.is_file():
                 if log_file.stat().st_size == 0:
                     logging.info(f"Файл {log_file.name} пустой, пропускаем его отправку.")
                     await bot.send_message(message.chat.id,
@@ -931,16 +881,13 @@ from config import CHECK_INTERVAL
 
 async def start_scheduler_command(message, bot):
     try:
-        # Получаем текущий интервал, если планировщик уже запущен
         current_interval = get_current_interval()
 
         if current_interval is None:
-            # Если планировщик не запущен, запускаем его с интервалом из конфигурации
             await start_scheduler(CHECK_INTERVAL, bot)
             await bot.reply_to(message, f"Планировщик успешно запущен с интервалом {CHECK_INTERVAL} секунд.")
             logging.info("Планировщик успешно запущен.")
         else:
-            # Если планировщик уже запущен, уведомляем пользователя
             await bot.reply_to(message, f"Планировщик уже запущен с интервалом {current_interval} секунд.")
             logging.info(f"Попытка запуска планировщика, но он уже запущен с интервалом {current_interval} секунд.")
     except Exception as e:
@@ -1017,10 +964,15 @@ async def show_signals(message, bot: AsyncTeleBot):
     general_logger.info("Command /show initiated.")
     chat_id = message.chat.id
 
+    # Отправка сообщения с текущим временем и разделителем перед отправкой сигналов
+    timestamp_message = add_timestamp_and_separator("")
+    await bot.send_message(chat_id, timestamp_message)
+    general_logger.info("Отправлено сообщение с отметкой времени и разделителем.")
+
     active_signals = get_active_signals()
     if not active_signals:
         general_logger.info("No active signals.")
-        await bot.reply_to(message, "There are no active signals at the moment.")
+        await bot.reply_to(message, "В данный момент нет активных сигналов.")
     else:
         general_logger.info(f"Found {len(active_signals)} active signals.")
         await send_signal_messages(
@@ -1029,7 +981,7 @@ async def show_signals(message, bot: AsyncTeleBot):
 
     closed_signals = get_closed_signals()
     if closed_signals:
-        general_logger.info(f"Found {len(closed_signals)} closed signals.")
+        general_logger.info(f"Found {len(closed_signals)} закрытых сигналов.")
         await send_signal_messages(
             chat_id=chat_id,
             signals=closed_signals,
@@ -1037,10 +989,10 @@ async def show_signals(message, bot: AsyncTeleBot):
         )
         for signal in closed_signals:
             mark_signal_as_reported(signal.id)
-        general_logger.info("Closed signals processed and marked as reported.")
+        general_logger.info("Закрытые сигналы обработаны и отмечены как отправленные.")
     else:
-        general_logger.info("No closed signals.")
-        await bot.reply_to(message, "There are no closed signals at the moment.")
+        general_logger.info("Нет закрытых сигналов.")
+        await bot.reply_to(message, "В данный момент нет закрытых сигналов.")
 
 async def send_pending_signals(bot: AsyncTeleBot, chat_id):
     general_logger.info("Processing pending signals.")
@@ -1057,23 +1009,24 @@ async def send_pending_signals(bot: AsyncTeleBot, chat_id):
 
     if signals_dict:
         general_logger.info(
-            f"Sending {len(signals_dict)} signals. Actual signals sending is {'enabled' if send_actual else 'disabled'}."
+            f"Sending {len(signals_dict)} сигналов. Актуальная отправка сигналов "
+            f"{'включена' if send_actual else 'выключена'}."
         )
 
         timestamp_message = add_timestamp_and_separator("")
         await bot.send_message(chat_id, timestamp_message)
-        general_logger.info("Sent message with timestamp and separator.")
+        general_logger.info("Отправлено сообщение с отметкой времени и разделителем.")
 
         for signal in signals_dict.values():
             is_new = signal.count_sends == 0
             is_closed = signal.date_end is not None
 
             if is_new:
-                general_logger.info(f"Detected new signal with ID {signal.id}.")
+                general_logger.info(f"Обнаружен новый сигнал с ID {signal.id}.")
             elif is_closed:
-                general_logger.info(f"Detected closed signal with ID {signal.id}.")
+                general_logger.info(f"Обнаружен закрытый сигнал с ID {signal.id}.")
             else:
-                general_logger.info(f"Detected actual signal with ID {signal.id}.")
+                general_logger.info(f"Обнаружен актуальный сигнал с ID {signal.id}.")
 
             if is_new or is_closed or send_actual:
                 if is_closed:
@@ -1096,23 +1049,22 @@ async def send_pending_signals(bot: AsyncTeleBot, chat_id):
                 success = increment_count_sends(signal.id)
                 if success:
                     general_logger.info(
-                        f"Successfully incremented count_sends for signal with ID {signal.id}"
+                        f"Успешно увеличено количество отправок для сигнала с ID {signal.id}"
                     )
                 else:
                     general_logger.warning(
-                        f"Failed to increment count_sends for signal with ID {signal.id}"
+                        f"Не удалось увеличить количество отправок для сигнала с ID {signal.id}"
                     )
                 mark_signal_as_sent(signal.id)
             else:
                 general_logger.info(
-                    f"Skipped actual signal with ID {signal.id} due to sending settings"
+                    f"Пропущен актуальный сигнал с ID {signal.id} из-за настроек отправки"
                 )
 
-        general_logger.info("Signal sending process completed.")
+        general_logger.info("Процесс отправки сигналов завершен.")
     else:
-        general_logger.info("No new signals to send.")
-        await bot.send_message(chat_id, "No new signals to send.")
-
+        general_logger.info("Нет новых сигналов для отправки.")
+        await bot.send_message(chat_id, "Нет новых сигналов для отправки.")
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/menu_handlers.py
 File Name: menu_handlers.py
@@ -1153,6 +1105,30 @@ async def actual_send_button(message, bot):
 async def help_button(message, bot):
     from .help import send_help
     await send_help(message, bot)
+
+async def delete_tables_button(message, bot):
+    from .delete_tables import delete_tables
+    await delete_tables(message, bot)
+
+async def table_signals_button(message, bot):
+    from .table_signals import table_signals
+    await table_signals(message, bot)
+
+async def change_interval_button(message, bot):
+    from .interval import change_interval
+    await change_interval(message, bot)
+
+async def check_command_button(message, bot):
+    from .check import check_command
+    await check_command(message, bot)
+
+async def send_logs_button(message, bot):
+    from .logs import send_logs
+    await send_logs(message, bot)
+
+async def delete_logs_button(message, bot):
+    from .delete_logs import delete_logs
+    await delete_logs(message, bot)
 --------------------------------------------------------------------------------
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/__pycache__/logs.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/bot/handlers/commands/__pycache__/stop.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
@@ -1223,6 +1199,12 @@ def init_db():
                   reported INTEGER DEFAULT 0,
                   forecast TEXT DEFAULT 'unknown')''')
 
+    c.execute('''CREATE TABLE IF NOT EXISTS signals_to_send
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  signal_id INTEGER,
+                  signal_type TEXT,
+                  sent INTEGER DEFAULT 0)''')
+
     conn.commit()
     conn.close()
 
@@ -1237,7 +1219,7 @@ def delete_all_tables():
     conn.commit()
     conn.close()
 
-    general_logger.info("All tables have been deleted.")
+    general_logger.info("Все таблицы удалены.")
 
 def update_db_structure():
     conn = sqlite3.connect(DB_NAME)
@@ -1248,7 +1230,7 @@ def update_db_structure():
 
     if 'forecast' not in columns:
         c.execute("ALTER TABLE signals ADD COLUMN forecast TEXT DEFAULT 'unknown'")
-        general_logger.info("Added 'forecast' column to signals table")
+        general_logger.info("Добавлена колонка 'forecast' в таблицу signals")
 
     conn.commit()
     conn.close()
@@ -1292,7 +1274,7 @@ def increment_count_sends(signal_id: Any) -> bool:
     rows_affected = c.rowcount
     conn.close()
     general_logger.info(
-        f"Incremented count_sends for signal with ID {signal_id}. Rows affected: {rows_affected}")
+        f"Увеличено количество отправок для сигнала с ID {signal_id}. Затронуто строк: {rows_affected}")
     return rows_affected > 0
 
 def get_active_signals():
@@ -1369,7 +1351,7 @@ def fetch_all_signals():
 
 def get_active_signal(name):
     conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
+    c = conn.cursor()  # Инициализация курсора
     c.execute('''SELECT id, name, trend, date_start, date_last, accuracy, date_end, 
                  price_start, price_last, price_end, count_sends, reported, forecast
                  FROM signals 
@@ -1422,7 +1404,7 @@ def mark_signal_as_sent(signal_id):
                  WHERE signal_id = ?''', (signal_id,))
     conn.commit()
     conn.close()
-    general_logger.info(f"Signal with ID {signal_id} marked as sent")
+    general_logger.info(f"Сигнал с ID {signal_id} отмечен как отправленный")
 
 def get_signal_by_id(signal_id):
     conn = sqlite3.connect(DB_NAME)
@@ -1447,33 +1429,37 @@ Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/database/_
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/crypto_api.py
 File Name: crypto_api.py
 Code:
-import ccxt.async_support as ccxt
+import ccxt
 from config import EXCHANGE_API_KEY, EXCHANGE_SECRET
-from utils.logger import general_logger
+import numpy as np
 
 exchange = ccxt.binance({
     'apiKey': EXCHANGE_API_KEY,
-    'secret': EXCHANGE_SECRET,
+    'secret': EXCHANGE_SECRET
 })
 
-async def get_ohlcv(symbol, timeframe='1h', limit=48):
+async def get_ohlcv(pair):
     try:
-        ohlcv = await exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
-        await exchange.close()
-        return ohlcv
+        ohlcv = exchange.fetch_ohlcv(pair, timeframe='1h', limit=48)
+        ohlcv_array = np.array(ohlcv)
+        return {
+            'timestamp': ohlcv_array[:, 0],
+            'open': ohlcv_array[:, 1],
+            'high': ohlcv_array[:, 2],
+            'low': ohlcv_array[:, 3],
+            'close': ohlcv_array[:, 4],
+            'volume': ohlcv_array[:, 5]
+        }
     except Exception as e:
-        general_logger.error(f"Error fetching OHLCV data: {e}")
-        await exchange.close()
+        print(f"Ошибка при получении данных OHLCV для пары {pair}: {e}")
         return None
 
-async def get_current_price(symbol):
+async def get_current_price(pair):
     try:
-        ticker = await exchange.fetch_ticker(symbol)
-        await exchange.close()
-        return ticker['last']
+        ticker = exchange.fetch_ticker(pair)
+        return ticker['close']
     except Exception as e:
-        general_logger.error(f"Error fetching current price: {e}")
-        await exchange.close()
+        print(f"Ошибка при получении текущей цены для пары {pair}: {e}")
         return None
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/signal_manager.py
@@ -1488,14 +1474,14 @@ from utils.logger import analyze_logger, general_logger
 import asyncio
 
 async def check_and_create_signals(crypto_pairs):
-    general_logger.info("Checking and creating new signals.")
-    analyze_logger.info("Starting the process of checking and creating signals")
+    general_logger.info("Проверка и создание новых сигналов.")
+    analyze_logger.info("Начало процесса проверки и создания сигналов")
     new_signals = []
     updated_signals = []
     closed_signals = []
 
     for pair in crypto_pairs:
-        analyze_logger.info(f"Analyzing pair: {pair}")
+        analyze_logger.info(f"Анализ пары: {pair}")
         ohlcv = await get_ohlcv(pair)
         if ohlcv:
             trend, accuracy, forecast = analyze_trend(ohlcv)
@@ -1507,59 +1493,59 @@ async def check_and_create_signals(crypto_pairs):
                 if existing_signal.trend == trend:
                     update_signal(pair, current_time, current_price, accuracy, forecast)
                     updated_signals.append(existing_signal)
-                    analyze_logger.info(f"Updated existing signal for pair {pair}: {trend} with accuracy {accuracy}")
+                    analyze_logger.info(f"Обновлен существующий сигнал для пары {pair}: {trend} с точностью {accuracy}")
                 else:
                     close_signal(pair, current_time, current_price)
                     closed_signals.append(existing_signal)
                     insert_signal(pair, trend, current_time, current_price, accuracy, forecast)
                     new_signal = get_active_signal(pair)
                     new_signals.append(new_signal)
-                    analyze_logger.info(f"Closed old signal and created new for pair {pair}: {trend} with accuracy {accuracy}")
+                    analyze_logger.info(f"Закрыт старый сигнал и создан новый для пары {pair}: {trend} с точностью {accuracy}")
             else:
                 insert_signal(pair, trend, current_time, current_price, accuracy, forecast)
                 new_signal = get_active_signal(pair)
                 new_signals.append(new_signal)
-                analyze_logger.info(f"Created new signal for pair {pair}: {trend} with accuracy {accuracy}")
+                analyze_logger.info(f"Создан новый сигнал для пары {pair}: {trend} с точностью {accuracy}")
         else:
-            analyze_logger.warning(f"Failed to get OHLCV data for pair {pair}. Skipping.")
+            analyze_logger.warning(f"Не удалось получить данные OHLCV для пары {pair}. Пропуск.")
 
-    analyze_logger.info("Finished the process of checking and creating signals")
+    analyze_logger.info("Завершение процесса проверки и создания сигналов")
     return new_signals, updated_signals, closed_signals
 
 async def update_active_signals():
-    general_logger.info("Updating active signals.")
-    analyze_logger.info("Starting update of active signals")
+    general_logger.info("Обновление активных сигналов.")
+    analyze_logger.info("Начало обновления активных сигналов")
     active_signals = get_active_signals()
     for signal in active_signals:
         pair = signal.name
-        analyze_logger.info(f"Updating signal for pair: {pair}")
+        analyze_logger.info(f"Обновление сигнала для пары: {pair}")
         ohlcv = await get_ohlcv(pair)
         if ohlcv:
             if is_trend_still_valid(ohlcv, signal.trend):
-                analyze_logger.info(f"Signal for pair {pair} is still valid")
+                analyze_logger.info(f"Сигнал для пары {pair} все еще актуален")
                 current_price = await get_current_price(pair)
                 current_time = get_current_time()
                 _, accuracy, forecast = analyze_trend(ohlcv)
                 update_signal(pair, current_time, current_price, accuracy, forecast)
             else:
-                analyze_logger.info(f"Signal for pair {pair} is no longer valid")
+                analyze_logger.info(f"Сигнал для пары {pair} больше не актуален")
                 current_price = await get_current_price(pair)
                 current_time = get_current_time()
                 close_signal(pair, current_time, current_price)
         else:
-            analyze_logger.warning(f"Failed to get OHLCV data for pair {pair}. Skipping.")
-    analyze_logger.info("Finished updating active signals")
+            analyze_logger.warning(f"Не удалось получить данные OHLCV для пары {pair}. Пропуск.")
+    analyze_logger.info("Завершение обновления активных сигналов")
 
 async def update_signal_in_db(signal):
     try:
         existing_signal = get_active_signal(signal.name)
         if existing_signal:
             update_signal(signal.name, signal.date_last, signal.price_last, signal.accuracy, signal.forecast)
-            analyze_logger.info(f"Updated signal in DB: ID {signal.id}, trend {signal.trend}, accuracy {signal.accuracy}")
+            analyze_logger.info(f"Обновлен сигнал в базе данных: ID {signal.id}, тренд {signal.trend}, точность {signal.accuracy}")
         else:
-            analyze_logger.error(f"Signal with ID {signal.id} not found in database.")
+            analyze_logger.error(f"Сигнал с ID {signal.id} не найден в базе данных.")
     except Exception as e:
-        analyze_logger.error(f"Error updating signal in database: {e}")
+        analyze_logger.error(f"Ошибка при обновлении сигнала в базе данных: {e}")
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/trend_analyzer.py
 File Name: trend_analyzer.py
@@ -1570,14 +1556,14 @@ from utils.logger import analyze_logger
 from scipy import stats
 
 def analyze_trend(ohlcv_data):
-    analyze_logger.info("Starting trend analysis")
+    analyze_logger.info("Начало анализа тренда")
 
     df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
     df.set_index('timestamp', inplace=True)
 
-    if len(df) < 48:  # Minimum 2 days of hourly data
-        analyze_logger.warning("Insufficient data for analysis")
+    if len(df) < 48:  # Минимум 2 дня данных с часовыми интервалами
+        analyze_logger.warning("Недостаточно данных для анализа")
         return 'neutral', 50, None
 
     df['MA20'] = df['close'].rolling(window=20).mean()
@@ -1590,7 +1576,7 @@ def analyze_trend(ohlcv_data):
     accuracy = calculate_accuracy(df)
     forecast = generate_forecast(df)
 
-    analyze_logger.info(f"Trend: {current_trend}, Accuracy: {accuracy}%, Forecast: {forecast}")
+    analyze_logger.info(f"Тренд: {current_trend}, Точность: {accuracy}%, Прогноз: {forecast}")
 
     return current_trend, accuracy, forecast
 
@@ -1604,52 +1590,48 @@ def determine_trend(df):
 
     if close > ma20 and close > ma50 and close > ema20:
         if close > bb_upper:
-            return 'overbought'
-        return 'bullish'
+            return 'перекупленность'
+        return 'бычий'
     elif close < ma20 and close < ma50 and close < ema20:
         if close < bb_lower:
-            return 'oversold'
-        return 'bearish'
+            return 'перепроданность'
+        return 'медвежий'
     elif ma20 > ma50:
-        return 'short_term_bullish'
+        return 'краткосрочный бычий'
     elif ma20 < ma50:
-        return 'short_term_bearish'
+        return 'краткосрочный медвежий'
     else:
-        return 'sideways'
+        return 'боковой'
 
 def calculate_accuracy(df):
     close = df['close'].iloc[-1]
     ma20 = df['MA20'].iloc[-1]
     diff = abs(close - ma20)
     max_diff = max(df['close']) - min(df['close'])
-    accuracy = int((1 - diff / max_diff) * 100) if max_diff != 0 else 50
-    return max(1, min(100, accuracy))
+    accuracy = int((1 - diff / max_diff) * 100)
+    return accuracy
 
 def generate_forecast(df):
-    X = np.arange(len(df)).reshape(-1, 1)
-    y = df['close'].values
+    slope, intercept, r_value, p_value, std_err = stats.linregress(range(len(df['close'])), df['close'])
+    forecast = 'upward' if slope > 0 else 'downward' if slope < 0 else 'neutral'
+    return forecast
 
-    model = stats.linregress(X.flatten(), y)
-    slope = model.slope
-    intercept = model.intercept
-
-    next_day = len(df)
-    forecast_price = slope * next_day + intercept
-
-    if forecast_price > df['close'].iloc[-1]:
-        return 'upward'
-    elif forecast_price < df['close'].iloc[-1]:
-        return 'downward'
-    else:
-        return 'stable'
-
-def is_trend_still_valid(ohlcv_data, trend):
+def is_trend_still_valid(ohlcv_data, current_trend):
     df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
     df.set_index('timestamp', inplace=True)
 
-    current_trend = determine_trend(df)
-    return current_trend == trend
+    if len(df) < 48:  # Минимум 2 дня данных с часовыми интервалами
+        return False
+
+    df['MA20'] = df['close'].rolling(window=20).mean()
+    df['MA50'] = df['close'].rolling(window=50).mean()
+    df['EMA20'] = df['close'].ewm(span=20, adjust=False).mean()
+    df['BB_upper'] = df['MA20'] + 2 * df['close'].rolling(window=20).std()
+    df['BB_lower'] = df['MA20'] - 2 * df['close'].rolling(window=20).std()
+
+    detected_trend = determine_trend(df)
+    return detected_trend == current_trend
 --------------------------------------------------------------------------------
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/__pycache__/crypto_api.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
 Error reading /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/services/__pycache__/trend_analyzer.cpython-311.pyc: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte
@@ -1738,13 +1720,15 @@ from config import TIMEZONE
 from pytz import timezone
 from utils.logger import general_logger
 
+import datetime
+
 def add_timestamp_and_separator(message):
-    current_time = datetime.now(timezone(TIMEZONE)).strftime("%Y-%m-%d %H:%M")
-    separator = "-" * 40
-    return f"{current_time}\n{separator}\n{message}"
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    separator = "============================"
+    return f"{separator}\n{current_time}\n{separator}\n{message}"
 
 def format_new_signal_message(signal, is_new=False):
-    status = "New signal" if signal.count_sends == 0 else "Actual"
+    status = "Новый сигнал" if signal.count_sends == 0 else "Актуальный"
 
     trend_emoji = get_trend_emoji(signal.trend)
     forecast_emoji = get_forecast_emoji(signal.forecast)
@@ -1753,15 +1737,15 @@ def format_new_signal_message(signal, is_new=False):
     price_change_str = f"{'+' if price_change > 0 else '-'}{abs(price_change):.2f}%"
 
     general_logger.info(
-        f"Formatting signal: {signal.name}, Count Sends: {signal.count_sends}, Status: {status}"
+        f"Форматирование сигнала: {signal.name}, Количество отправок: {signal.count_sends}, Статус: {status}"
     )
 
     return (
-        f"{trend_emoji} {status}: {signal.name} {signal.trend.upper()} Accuracy: {signal.accuracy}\n"
-        f"Start: {format_date(signal.date_start)} Price: {signal.price_start}\n"
-        f"Current: {format_date(signal.date_last)} Price: {signal.price_last}\n"
-        f"Price change: {price_change_str}\n"
-        f"Forecast: {forecast_emoji} {signal.forecast.capitalize()}"
+        f"{trend_emoji} {status}: {signal.name} {signal.trend.upper()} Точность: {signal.accuracy}\n"
+        f"Начало: {format_date(signal.date_start)} Цена: {signal.price_start}\n"
+        f"Текущая: {format_date(signal.date_last)} Цена: {signal.price_last}\n"
+        f"Изменение цены: {price_change_str}\n"
+        f"Прогноз: {forecast_emoji} {signal.forecast.capitalize()}"
     )
 
 def format_closed_signal_message(signal):
@@ -1771,11 +1755,11 @@ def format_closed_signal_message(signal):
     price_change_str = f"{'+' if price_change > 0 else '-'}{abs(price_change):.2f}%"
 
     return (
-        f"❌ Closed signal: {signal.name} {trend_emoji} {signal.trend.upper()}\n"
-        f"Start: {format_date(signal.date_start)} Price: {signal.price_start}\n"
-        f"End: {format_date(signal.date_end)} Price: {signal.price_end}\n"
-        f"Price change: {price_change_str}\n"
-        f"Total duration: {calculate_time_difference(signal.date_start, signal.date_end)}"
+        f"❌ Закрытый сигнал: {signal.name} {trend_emoji} {signal.trend.upper()}\n"
+        f"Начало: {format_date(signal.date_start)} Цена: {signal.price_start}\n"
+        f"Окончание: {format_date(signal.date_end)} Цена: {signal.price_end}\n"
+        f"Изменение цены: {price_change_str}\n"
+        f"Общая продолжительность: {calculate_time_difference(signal.date_start, signal.date_end)}"
     )
 
 def format_signals_table(signals):
@@ -1784,18 +1768,18 @@ def format_signals_table(signals):
     for signal in signals:
         formatted_signal = (
             f"ID: {signal[0]}\n"
-            f"Name: {signal[1]}\n"
-            f"Trend: {signal[2]}\n"
-            f"Start Date: {signal[3]}\n"
-            f"Last Date: {signal[4]}\n"
-            f"Accuracy: {signal[5]}\n"
-            f"End Date: {signal[6]}\n"
-            f"Start Price: {signal[7]}\n"
-            f"Last Price: {signal[8]}\n"
-            f"End Price: {signal[9]}\n"
-            f"Count Sends: {signal[10]}\n"
-            f"Reported: {signal[11]}\n"
-            f"Forecast: {signal[12]}\n"
+            f"Название: {signal[1]}\n"
+            f"Тренд: {signal[2]}\n"
+            f"Дата начала: {signal[3]}\n"
+            f"Последняя дата: {signal[4]}\n"
+            f"Точность: {signal[5]}\n"
+            f"Дата окончания: {signal[6]}\n"
+            f"Начальная цена: {signal[7]}\n"
+            f"Последняя цена: {signal[8]}\n"
+            f"Цена при закрытии: {signal[9]}\n"
+            f"Количество отправок: {signal[10]}\n"
+            f"Отмечено: {signal[11]}\n"
+            f"Прогноз: {signal[12]}\n"
             "----------------------"
         )
         formatted_signals.append(formatted_signal)
@@ -1822,7 +1806,6 @@ def get_forecast_emoji(forecast):
         "stable": "➖"
     }
     return forecast_emojis.get(forecast.lower(), "❓")
-
 --------------------------------------------------------------------------------
 Path: /Users/mikhailryazanov/PycharmProjects/crypto_trend_bot/utils/chart_generator.py
 File Name: chart_generator.py
@@ -1836,13 +1819,15 @@ import io
 from services.trend_analyzer import determine_trend, generate_forecast
 
 def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=None):
+    # Преобразование данных в DataFrame и установка индекса по временной метке
     df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
     df.set_index('timestamp', inplace=True)
 
     if len(df) < 48:
-        raise ValueError("Insufficient data to compute indicators")
+        raise ValueError("Недостаточно данных для вычисления индикаторов")
 
+    # Расчет технических индикаторов
     df['MA20'] = df['close'].rolling(window=20).mean()
     df['MA50'] = df['close'].rolling(window=50).mean()
     df['EMA20'] = df['close'].ewm(span=20, adjust=False).mean()
@@ -1852,11 +1837,13 @@ def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=No
     trend = determine_trend(df)
     forecast = generate_forecast(df)
 
+    # Настройка цветов для графика
     mc = mpf.make_marketcolors(up='g', down='r', inherit=True)
     s = mpf.make_mpf_style(marketcolors=mc)
 
     apds = []
 
+    # Добавление индикаторов на график
     if not df['MA20'].isnull().all():
         apds.append(mpf.make_addplot(df['MA20'], color='blue', width=1))
     if not df['MA50'].isnull().all():
@@ -1868,6 +1855,7 @@ def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=No
     if not df['BB_lower'].isnull().all():
         apds.append(mpf.make_addplot(df['BB_lower'], color='green', linestyle='--'))
 
+    # Добавление маркера для начала сигнала
     if signal_start_date:
         signal_start = datetime.fromisoformat(signal_start_date)
         if signal_start.tzinfo is not None:
@@ -1878,16 +1866,17 @@ def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=No
         marker = get_trend_marker(trend)
         apds.append(mpf.make_addplot(signal_start_series, type='scatter', markersize=100, marker=marker['shape'], color=marker['color']))
 
-    # Add forecast arrow
+    # Добавление стрелки прогноза
     forecast_arrow = pd.Series([np.nan] * len(df), index=df.index)
     forecast_arrow.iloc[-1] = df['close'].iloc[-1]
     forecast_color = 'g' if forecast == 'upward' else 'r' if forecast == 'downward' else 'gray'
     apds.append(mpf.make_addplot(forecast_arrow, type='scatter', markersize=200, marker='$→$', color=forecast_color))
 
+    # Построение и сохранение графика
     fig, axes = mpf.plot(df, type='candle', style=s, addplot=apds,
-                         title=f'Trend: {trend.capitalize()}, Forecast: {forecast.capitalize()}',
-                         ylabel='Price',
-                         datetime_format='%Y-%m-%d %H:%M',
+                         title=f'Тренд: {trend.capitalize()}, Прогноз: {forecast.capitalize()}',
+                         ylabel='Цена',
+                         datetime_format='%Y-%m-%d %H:%М',
                          figsize=(12, 8),
                          returnfig=True)
 

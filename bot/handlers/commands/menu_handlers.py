@@ -34,3 +34,27 @@ async def actual_send_button(message, bot):
 async def help_button(message, bot):
     from .help import send_help
     await send_help(message, bot)
+
+async def delete_tables_button(message, bot):
+    from .delete_tables import delete_tables
+    await delete_tables(message, bot)
+
+async def table_signals_button(message, bot):
+    from .table_signals import table_signals
+    await table_signals(message, bot)
+
+async def change_interval_button(message, bot):
+    from .interval import change_interval
+    await change_interval(message, bot)
+
+async def check_command_button(message, bot):
+    from .check import check_command
+    await check_command(message, bot)
+
+async def send_logs_button(message, bot):
+    from .logs import send_logs
+    await send_logs(message, bot)
+
+async def delete_logs_button(message, bot):
+    from .delete_logs import delete_logs
+    await delete_logs(message, bot)

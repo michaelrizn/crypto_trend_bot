@@ -14,7 +14,7 @@ async def stop_bot(message, bot: AsyncTeleBot):
         except asyncio.CancelledError:
             pass
         check_task = None
-        stop_scheduler()  # Останавливаем планировщик
+        stop_scheduler()
         general_logger.info("Бот остановлен. Периодические проверки деактивированы.")
         response = "Бот остановлен. Периодические проверки деактивированы."
         await bot.reply_to(message, response)

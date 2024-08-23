@@ -7,13 +7,15 @@ import io
 from services.trend_analyzer import determine_trend, generate_forecast
 
 def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=None):
+    # Преобразование данных в DataFrame и установка индекса по временной метке
     df = pd.DataFrame(ohlcv_data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
     df.set_index('timestamp', inplace=True)
 
     if len(df) < 48:
-        raise ValueError("Insufficient data to compute indicators")
+        raise ValueError("Недостаточно данных для вычисления индикаторов")
 
+    # Расчет технических индикаторов
     df['MA20'] = df['close'].rolling(window=20).mean()
     df['MA50'] = df['close'].rolling(window=50).mean()
     df['EMA20'] = df['close'].ewm(span=20, adjust=False).mean()
@@ -23,11 +25,13 @@ def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=No
     trend = determine_trend(df)
     forecast = generate_forecast(df)
 
+    # Настройка цветов для графика
     mc = mpf.make_marketcolors(up='g', down='r', inherit=True)
     s = mpf.make_mpf_style(marketcolors=mc)
 
     apds = []
 
+    # Добавление индикаторов на график
     if not df['MA20'].isnull().all():
         apds.append(mpf.make_addplot(df['MA20'], color='blue', width=1))
     if not df['MA50'].isnull().all():
@@ -39,6 +43,7 @@ def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=No
     if not df['BB_lower'].isnull().all():
         apds.append(mpf.make_addplot(df['BB_lower'], color='green', linestyle='--'))
 
+    # Добавление маркера для начала сигнала
     if signal_start_date:
         signal_start = datetime.fromisoformat(signal_start_date)
         if signal_start.tzinfo is not None:
@@ -49,16 +54,17 @@ def generate_chart(ohlcv_data, trend, signal_start_date=None, signal_end_date=No
         marker = get_trend_marker(trend)
         apds.append(mpf.make_addplot(signal_start_series, type='scatter', markersize=100, marker=marker['shape'], color=marker['color']))
 
-    # Add forecast arrow
+    # Добавление стрелки прогноза
     forecast_arrow = pd.Series([np.nan] * len(df), index=df.index)
     forecast_arrow.iloc[-1] = df['close'].iloc[-1]
     forecast_color = 'g' if forecast == 'upward' else 'r' if forecast == 'downward' else 'gray'
     apds.append(mpf.make_addplot(forecast_arrow, type='scatter', markersize=200, marker='$→$', color=forecast_color))
 
+    # Построение и сохранение графика
     fig, axes = mpf.plot(df, type='candle', style=s, addplot=apds,
-                         title=f'Trend: {trend.capitalize()}, Forecast: {forecast.capitalize()}',
-                         ylabel='Price',
-                         datetime_format='%Y-%m-%d %H:%M',
+                         title=f'Тренд: {translate_trend(trend).capitalize()}, Прогноз: {translate_forecast(forecast).capitalize()}',
+                         ylabel='Цена',
+                         datetime_format='%Y-%m-%d %H:%М',
                          figsize=(12, 8),
                          returnfig=True)
 
@@ -80,3 +86,24 @@ def get_trend_marker(trend):
         'short_term_bearish': {'shape': '<', 'color': 'pink'}
     }
     return markers.get(trend.lower(), {'shape': 'o', 'color': 'gray'})
+
+def translate_trend(trend):
+    trend_translations = {
+        "bullish": "бычий",
+        "bearish": "медвежий",
+        "neutral": "нейтральный",
+        "sideways": "боковой",
+        "overbought": "перекупленность",
+        "oversold": "перепроданность",
+        "short_term_bullish": "краткосрочный бычий",
+        "short_term_bearish": "краткосрочный медвежий",
+    }
+    return trend_translations.get(trend.lower(), trend)
+
+def translate_forecast(forecast):
+    forecast_translations = {
+        "upward": "восходящий",
+        "downward": "нисходящий",
+        "stable": "стабильный"
+    }
+    return forecast_translations.get(forecast.lower(), forecast)

@@ -7,3 +7,6 @@ async def toggle_actual_send(message, bot):
     response = f"Отправка актуальных сигналов {status}."
     await bot.send_message(message.chat.id, response)
     general_logger.info(response)
+
+async def actual_send_button(message, bot):
+    await toggle_actual_send(message, bot)
