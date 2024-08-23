@@ -15,7 +15,7 @@ EXCHANGE_SECRET = "nxQoPTFVJeR1U6etHoKXtIFbvV5s3nSDOY5579PKVTeHZQcHJw5VZDtJ60Jsl
 DB_NAME = "price_trend_db.sqlite"
 
 # Настройки планировщика
-CHECK_INTERVAL = 1 * 60  # 1 минута в секундах
+CHECK_INTERVAL = 15 * 60  # 1 минута в секундах
 
 # Часовой пояс
 TIMEZONE = "Europe/Samara"

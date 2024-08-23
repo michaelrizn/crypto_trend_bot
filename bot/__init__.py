@@ -1,6 +1,9 @@
 import asyncio
-from .handlers.commands import *
-from bot.handlers.commands.menu_handlers import actual_send_button, get_main_menu_markup
+from bot.handlers.commands import (
+    start_bot, stop_bot, show_signals, count_signals, delete_tables,
+    table_signals, toggle_actual_send, change_interval, send_help, send_logs, delete_logs
+)
+from bot.handlers.commands.menu_handlers import get_main_menu_markup
 from bot.handlers.commands.check import check_command
 from bot.scheduler import start_scheduler
 import logging
@@ -20,7 +23,7 @@ async def setup_bot(bot):
     bot.message_handler(commands=['help'])(lambda message: asyncio.create_task(send_help(message, bot)))
     bot.message_handler(commands=['logs'])(lambda message: asyncio.create_task(send_logs(message, bot)))
     bot.message_handler(commands=['delete_logs'])(lambda message: asyncio.create_task(delete_logs(message, bot)))
-    bot.message_handler(commands=['check'])(lambda message: asyncio.create_task(check_command(message, bot)))  # Регистрация команды /check
+    bot.message_handler(commands=['check'])(lambda message: asyncio.create_task(check_command(message, bot)))
 
     logging.info("Команда /check зарегистрирована")
 

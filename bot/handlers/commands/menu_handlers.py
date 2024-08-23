@@ -6,10 +6,10 @@ def get_main_menu_markup():
     main_menu_markup = ReplyKeyboardMarkup(resize_keyboard=True)
     main_menu_markup.row(KeyboardButton("📊 Показать сигналы"), KeyboardButton("🔢 Количество сигналов"))
     main_menu_markup.row(KeyboardButton("▶️ Старт"), KeyboardButton("⏹ Стоп"))
-    main_menu_markup.row(KeyboardButton("/actual_send"), KeyboardButton("❓ Помощь"))
-    main_menu_markup.row(KeyboardButton("/delete_tables"), KeyboardButton("/table_signals"))
-    main_menu_markup.row(KeyboardButton("/interval"), KeyboardButton("/check"))
-    main_menu_markup.row(KeyboardButton("/logs"), KeyboardButton("/delete_logs"))
+    main_menu_markup.row(KeyboardButton("🔄 Переключить отправку"), KeyboardButton("❓ Помощь"))
+    main_menu_markup.row(KeyboardButton("🗑 Удалить таблицы"), KeyboardButton("📋 Таблица сигналов"))
+    main_menu_markup.row(KeyboardButton("⏱ Изменить интервал"), KeyboardButton("🔍 Проверить сейчас"))
+    main_menu_markup.row(KeyboardButton("📁 Показать логи"), KeyboardButton("🗑 Удалить логи"))
     return main_menu_markup
 
 async def show_signals_button(message, bot):

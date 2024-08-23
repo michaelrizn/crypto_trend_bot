@@ -1,26 +1,11 @@
 from .commands import (
-    start_bot,
-    start_scheduler_command,
-    stop_bot,
-    show_signals,
-    count_signals,
-    delete_tables,
-    table_signals,
-    toggle_actual_send,
-    change_interval,
-    send_help,
-    send_logs,
-    delete_logs,
-    send_pending_signals,
-    check_command  # Убедитесь, что эта строка присутствует
+    start_bot, start_scheduler_command, stop_bot, show_signals,
+    count_signals, delete_tables, table_signals, toggle_actual_send,
+    change_interval, send_help, send_logs, delete_logs, send_pending_signals
 )
 from .commands.menu_handlers import (
-    get_main_menu_markup,
-    show_signals_button,
-    count_signals_button,
-    start_bot_button,
-    stop_bot_button,
-    help_button
+    get_main_menu_markup, show_signals_button, count_signals_button,
+    start_bot_button, stop_bot_button, help_button
 )
 
 async def setup_bot(bot):

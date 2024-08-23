@@ -14,3 +14,4 @@ class Signal:
     price_end: float
     count_sends: int
     reported: int
+    forecast: str = "unknown"

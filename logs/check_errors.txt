@@ -22,5 +22,6 @@
 ./bot/handlers/utils.py:4:1: F401 'database.models.Signal' imported but unused
 ./bot/handlers/utils.py:7:1: F401 'database.db_handler.increment_count_sends' imported but unused
 ./main.py:7:1: F401 'bot.scheduler.start_scheduler' imported but unused
-./services/lstm_analyzer.py:1:1: F401 'numpy as np' imported but unused
-./utils/message_formatter.py:3:1: F811 redefinition of unused 'datetime' from line 1
+./services/signal_manager.py:5:1: F401 'database.models.Signal' imported but unused
+./services/signal_manager.py:7:1: F401 'asyncio' imported but unused
+./utils/chart_generator.py:4:1: F401 'datetime.timedelta' imported but unused
