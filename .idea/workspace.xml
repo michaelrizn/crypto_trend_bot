@@ -6,11 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="85cb15fd-392a-4409-a5e6-9d206f4fa05d" name="Changes" comment="1.6">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/stop.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/stop.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/scheduler.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/scheduler.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/analyze.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/analyze.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/check_errors.txt" beforeDir="false" afterPath="$PROJECT_DIR$/logs/check_errors.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/general.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/general.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/project_tree_output.txt" beforeDir="false" afterPath="$PROJECT_DIR$/logs/project_tree_output.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/price_trend_db.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/price_trend_db.sqlite" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -212,7 +211,15 @@
       <option name="project" value="LOCAL" />
       <updated>1724513073549</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="1.6">
+      <option name="closed" value="true" />
+      <created>1724513914614</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1724513914614</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

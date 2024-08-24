@@ -1,3 +1,4 @@
+./bot/__init__.py:1:1: F401 'asyncio' imported but unused
 ./bot/handlers/commands/actual_send.py:1:1: F401 'config.get_actual_signals_status' imported but unused
 ./bot/handlers/commands/menu_handlers.py:1:1: F401 'telebot.async_telebot.AsyncTeleBot' imported but unused
 ./bot/handlers/commands/start.py:5:1: F401 'database.db_handler.get_active_signals' imported but unused
