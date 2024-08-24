@@ -38,6 +38,9 @@ async def process_and_send_signals(bot: AsyncTeleBot, chat_id):
 
     new_signals, updated_signals, closed_signals = await check_and_create_signals(CRYPTO_PAIRS)
 
+    # Отправляем разделитель только при старте бота
+    await bot.send_message(chat_id, "Начало анализа сигналов:")
+
     if new_signals or updated_signals:
         await bot.send_message(
             chat_id,

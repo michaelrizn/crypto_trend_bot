@@ -1,27 +1,15 @@
-./bot/__init__.py:2:1: F403 'from .handlers.commands import *' used; unable to detect undefined names
-./bot/__init__.py:3:1: F401 'bot.handlers.commands.menu_handlers.actual_send_button' imported but unused
-./bot/__init__.py:5:1: F401 'bot.scheduler.start_scheduler' imported but unused
-./bot/__init__.py:12:81: F405 'start_bot' may be undefined, or defined from star imports: .handlers.commands
-./bot/__init__.py:13:80: F405 'stop_bot' may be undefined, or defined from star imports: .handlers.commands
-./bot/__init__.py:14:80: F405 'show_signals' may be undefined, or defined from star imports: .handlers.commands
-./bot/__init__.py:15:81: F405 'count_signals' may be undefined, or defined from star imports: .handlers.commands
-./bot/__init__.py:16:89: F405 'delete_tables' may be undefined, or defined from star imports: .handlers.commands
-./bot/__init__.py:17:89: F405 'table_signals' may be undefined, or defined from star imports: .handlers.commands
-./bot/__init__.py:18:87: F405 'toggle_actual_send' may be undefined, or defined from star imports: .handlers.commands
-./bot/__init__.py:19:84: F405 'change_interval' may be undefined, or defined from star imports: .handlers.commands
-./bot/__init__.py:20:80: F405 'send_help' may be undefined, or defined from star imports: .handlers.commands
-./bot/__init__.py:21:80: F405 'send_logs' may be undefined, or defined from star imports: .handlers.commands
-./bot/__init__.py:22:87: F405 'delete_logs' may be undefined, or defined from star imports: .handlers.commands
-./bot/handlers/__init__.py:1:1: F401 '.commands.check_command' imported but unused
-./bot/handlers/__init__.py:17:1: F401 '.commands.menu_handlers.get_main_menu_markup' imported but unused
 ./bot/handlers/commands/actual_send.py:1:1: F401 'config.get_actual_signals_status' imported but unused
 ./bot/handlers/commands/menu_handlers.py:1:1: F401 'telebot.async_telebot.AsyncTeleBot' imported but unused
 ./bot/handlers/commands/start.py:5:1: F401 'database.db_handler.get_active_signals' imported but unused
-./bot/handlers/commands/start.py:5:1: F401 'database.db_handler.get_closed_signals' imported but unused
 ./bot/handlers/utils.py:1:1: F401 'io' imported but unused
 ./bot/handlers/utils.py:4:1: F401 'database.models.Signal' imported but unused
-./bot/handlers/utils.py:7:1: F401 'database.db_handler.increment_count_sends' imported but unused
 ./main.py:7:1: F401 'bot.scheduler.start_scheduler' imported but unused
 ./services/signal_manager.py:5:1: F401 'database.models.Signal' imported but unused
 ./services/signal_manager.py:7:1: F401 'asyncio' imported but unused
+./services/trend_analyzer.py:2:1: F401 'numpy as np' imported but unused
 ./utils/chart_generator.py:4:1: F401 'datetime.timedelta' imported but unused
+./utils/message_formatter.py:4:1: F811 redefinition of unused 'datetime' from line 3
+./utils/message_formatter.py:4:1: F401 'datetime.datetime' imported but unused
+./utils/message_formatter.py:5:1: F401 'pytz.timezone' imported but unused
+./utils/message_formatter.py:6:1: F401 'config.TIMEZONE' imported but unused
+./utils/message_formatter.py:6:1: F401 'config.get_actual_signals_status' imported but unused

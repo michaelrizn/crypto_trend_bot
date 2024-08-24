@@ -9,33 +9,28 @@ from database.db_handler import (
     increment_count_sends
 )
 from utils.logger import general_logger
-from utils.message_formatter import format_new_signal_message, format_closed_signal_message, \
-    add_timestamp_and_separator
+from utils.message_formatter import format_new_signal_message, format_closed_signal_message
 from bot.handlers.utils import send_signal_messages
 from config import get_actual_signals_status
 
 async def show_signals(message, bot: AsyncTeleBot):
-    general_logger.info("Command /show initiated.")
+    general_logger.info("Команда /show инициирована.")
     chat_id = message.chat.id
 
-    # Отправка сообщения с текущим временем и разделителем перед отправкой сигналов
-    timestamp_message = add_timestamp_and_separator("")
-    await bot.send_message(chat_id, timestamp_message)
-    general_logger.info("Отправлено сообщение с отметкой времени и разделителем.")
-
     active_signals = get_active_signals()
+    closed_signals = get_closed_signals()
+
     if not active_signals:
-        general_logger.info("No active signals.")
+        general_logger.info("Нет активных сигналов.")
         await bot.reply_to(message, "В данный момент нет активных сигналов.")
     else:
-        general_logger.info(f"Found {len(active_signals)} active signals.")
+        general_logger.info(f"Найдено {len(active_signals)} активных сигналов.")
         await send_signal_messages(
             chat_id=chat_id, signals=active_signals, format_message_func=format_new_signal_message
         )
 
-    closed_signals = get_closed_signals()
     if closed_signals:
-        general_logger.info(f"Found {len(closed_signals)} закрытых сигналов.")
+        general_logger.info(f"Найдено {len(closed_signals)} закрытых сигналов.")
         await send_signal_messages(
             chat_id=chat_id,
             signals=closed_signals,
@@ -49,7 +44,7 @@ async def show_signals(message, bot: AsyncTeleBot):
         await bot.reply_to(message, "В данный момент нет закрытых сигналов.")
 
 async def send_pending_signals(bot: AsyncTeleBot, chat_id):
-    general_logger.info("Processing pending signals.")
+    general_logger.info("Обработка отложенных сигналов.")
     signals_to_send = get_signals_to_send()
     send_actual = get_actual_signals_status()
 
@@ -59,17 +54,13 @@ async def send_pending_signals(bot: AsyncTeleBot, chat_id):
         if signal:
             signals_dict[signal_id] = signal
 
-    general_logger.info(f"Using chat_id: {chat_id}")
+    general_logger.info(f"Используем chat_id: {chat_id}")
 
     if signals_dict:
         general_logger.info(
-            f"Sending {len(signals_dict)} сигналов. Актуальная отправка сигналов "
+            f"Отправка {len(signals_dict)} сигналов. Актуальная отправка сигналов "
             f"{'включена' if send_actual else 'выключена'}."
         )
-
-        timestamp_message = add_timestamp_and_separator("")
-        await bot.send_message(chat_id, timestamp_message)
-        general_logger.info("Отправлено сообщение с отметкой времени и разделителем.")
 
         for signal in signals_dict.values():
             is_new = signal.count_sends == 0
@@ -88,7 +79,6 @@ async def send_pending_signals(bot: AsyncTeleBot, chat_id):
                         chat_id=chat_id,
                         signals=[signal],
                         format_message_func=format_closed_signal_message,
-                        send_timestamp=False
                     )
                     mark_signal_as_reported(signal.id)
                 else:
@@ -97,7 +87,6 @@ async def send_pending_signals(bot: AsyncTeleBot, chat_id):
                         signals=[signal],
                         format_message_func=format_new_signal_message,
                         is_new=is_new,
-                        send_timestamp=False
                     )
 
                 success = increment_count_sends(signal.id)

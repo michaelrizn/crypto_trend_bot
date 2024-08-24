@@ -1,15 +1,10 @@
-from datetime import datetime
 from utils.time_utils import format_date, calculate_time_difference
-from config import TIMEZONE
-from pytz import timezone
 from utils.logger import general_logger
-
 import datetime
+from datetime import datetime
+from pytz import timezone
+from config import TIMEZONE, get_actual_signals_status
 
-def add_timestamp_and_separator(message):
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-    separator = "============================"
-    return f"{separator}\n{current_time}\n{separator}\n{message}"
 
 def format_new_signal_message(signal, is_new=False):
     status = "Новый сигнал" if signal.count_sends == 0 else "Актуальный"

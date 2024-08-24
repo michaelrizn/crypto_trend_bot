@@ -14,6 +14,7 @@ user_chat_id = None
 async def start_scheduler(check_interval, bot, chat_id):
     global job, current_interval, scheduler, user_chat_id
     logging.info("Инициализация и запуск планировщика.")
+    logging.info(f"Типы переменных перед запуском планировщика: scheduler={type(scheduler)}, job={type(job)}, current_interval={type(current_interval)}, bot={type(bot)}")
 
     user_chat_id = chat_id
 
@@ -28,11 +29,13 @@ async def start_scheduler(check_interval, bot, chat_id):
         args=[bot],
         id='process_signals'
     )
+    logging.info(f"Тип переменной job после создания задачи: {type(job)}")
     scheduler.start()
     logging.info(f"Планировщик запущен с интервалом {check_interval} секунд.")
 
 def stop_scheduler():
     global job, current_interval, scheduler
+    logging.info(f"Типы переменных перед остановкой планировщика: scheduler={type(scheduler)}, job={type(job)}, current_interval={type(current_interval)}")
     if scheduler.running:
         scheduler.shutdown()
         job = None
@@ -47,7 +50,9 @@ def get_current_interval():
 
 def update_scheduler_interval(new_interval):
     global job, current_interval, scheduler
+    logging.info(f"Типы переменных перед обновлением интервала планировщика: scheduler={type(scheduler)}, job={type(job)}, current_interval={type(current_interval)}")
     if scheduler.running and job:
+        logging.info(f"Тип переменной job перед изменением интервала: {type(job)}")
         scheduler.reschedule_job(
             'process_signals', trigger=IntervalTrigger(seconds=new_interval)
         )
@@ -58,7 +63,7 @@ def update_scheduler_interval(new_interval):
 
 async def process_signals_func(bot):
     global user_chat_id
-    logging.info("Начало выполнения периодической проверки сигналов.")
+    logging.info(f"Начало выполнения периодической проверки сигналов. Тип переменной bot: {type(bot)}")
     try:
         chat_id = user_chat_id
         if chat_id is None:
@@ -73,6 +78,8 @@ async def process_signals_func(bot):
 
         store_signals_for_sending(new_signals, updated_signals, closed_signals)
 
+        # Дополнительное логирование перед отправкой сигналов
+        logging.info(f"Перед отправкой сигналов. Тип переменной bot: {type(bot)}, Функция send_pending_signals: {send_pending_signals}")
         await send_pending_signals(bot, chat_id)
 
         logging.info("Периодическая проверка сигналов завершена успешно.")

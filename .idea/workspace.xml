@@ -7,32 +7,18 @@
     <list default="true" id="85cb15fd-392a-4409-a5e6-9d206f4fa05d" name="Changes" comment="1.5">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/actual_send.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/actual_send.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/delete_logs.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/delete_logs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/delete_tables.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/delete_tables.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/interval.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/interval.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/logs.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/logs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/menu_handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/menu_handlers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/scheduler_command.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/scheduler_command.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/commands/show_signals.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/show_signals.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/commands/start.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/start.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/stop.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/stop.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/periodic_tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/periodic_tasks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/commands/table_signals.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/commands/table_signals.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/scheduler.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/scheduler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/db_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/db_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/analyze.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/analyze.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/check_errors.txt" beforeDir="false" afterPath="$PROJECT_DIR$/logs/check_errors.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/general.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/general.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/project_tree_output.txt" beforeDir="false" afterPath="$PROJECT_DIR$/logs/project_tree_output.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/price_trend_db.sqlite" beforeDir="false" afterPath="$PROJECT_DIR$/price_trend_db.sqlite" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/crypto_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/crypto_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/signal_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/signal_manager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/trend_analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/services/trend_analyzer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/chart_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/chart_generator.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/message_formatter.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/message_formatter.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -67,23 +53,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python.all_errors.executor": "Run",
-    "Python.check_errors.executor": "Run",
-    "Python.code_extractor.executor": "Run",
-    "Python.db_handler.executor": "Run",
-    "Python.handlers.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.test_data.executor": "Run",
-    "Python.test_import.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PythonContentEntriesConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.all_errors.executor&quot;: &quot;Run&quot;,
+    &quot;Python.check_errors.executor&quot;: &quot;Run&quot;,
+    &quot;Python.code_extractor.executor&quot;: &quot;Run&quot;,
+    &quot;Python.db_handler.executor&quot;: &quot;Run&quot;,
+    &quot;Python.handlers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_data.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_import.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PythonContentEntriesConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/bot/handlers/commands" />
@@ -218,7 +204,15 @@
       <option name="project" value="LOCAL" />
       <updated>1724403720458</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="1.5">
+      <option name="closed" value="true" />
+      <created>1724427138966</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1724427138966</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
