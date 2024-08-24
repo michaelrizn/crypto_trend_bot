@@ -61,6 +61,10 @@ def update_scheduler_interval(new_interval):
     else:
         logging.warning("Планировщик не запущен, обновление интервала невозможно.")
 
+def is_scheduler_running():
+    global scheduler
+    return scheduler.running if scheduler else False
+
 async def process_signals_func(bot):
     global user_chat_id
     logging.info(f"Начало выполнения периодической проверки сигналов. Тип переменной bot: {type(bot)}")
