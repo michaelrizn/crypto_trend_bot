@@ -11,3 +11,4 @@ sqlalchemy
 flake8
 scipy
 telebot
+python-dotenv

@@ -1,24 +1,17 @@
-# Токен вашего бота
-BOT_TOKEN = "7317150884:AAENXygTDLy3KGvLIh5CgxfqRRS69Rd2I1U"
+import os
+from dotenv import load_dotenv
 
-# ID канала Telegram, куда бот будет отправлять сообщения
-CHANNEL_ID = "7317150884"
+# Загружаем переменные из .env
+load_dotenv()
 
-# Список проверяемых пар
-CRYPTO_PAIRS = ["BTC/USDT", "ETH/USDT", "ADA/USDT", "TON/USDT"]
-
-# Настройки API биржи
-EXCHANGE_API_KEY = "MWpeIx2bRxJW9igMlA4LDb6i7JovQLM9CYYS5AfbD803JyQhWbPAgi2m9LsBE58k"
-EXCHANGE_SECRET = "nxQoPTFVJeR1U6etHoKXtIFbvV5s3nSDOY5579PKVTeHZQcHJw5VZDtJ60JslMBh"
-
-# Настройки базы данных
-DB_NAME = "price_trend_db.sqlite"
-
-# Настройки планировщика
-CHECK_INTERVAL = 15 * 60  # 15 минут в секундах
-
-# Часовой пояс
-TIMEZONE = "Europe/Samara"
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+CHANNEL_ID = os.getenv('CHANNEL_ID')
+CRYPTO_PAIRS = os.getenv('CRYPTO_PAIRS').split(',')
+EXCHANGE_API_KEY = os.getenv('EXCHANGE_API_KEY')
+EXCHANGE_SECRET = os.getenv('EXCHANGE_SECRET')
+DB_NAME = os.getenv('DB_NAME')
+CHECK_INTERVAL = int(os.getenv('CHECK_INTERVAL'))
+TIMEZONE = os.getenv('TIMEZONE')
 
 _SEND_ACTUAL_SIGNALS = True
 
